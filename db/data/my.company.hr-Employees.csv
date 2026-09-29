@@ -1,0 +1,7 @@
+ID;firstName;lastName;fullName;email;phone;hireDate;salary;isActive;country;department_ID;role_ID;jobTitle_ID;manager_ID
+E001;Ali;Ben Salah;;ali.bensalah@company.com;20111111;2022-01-10;1200.00;true;Tunisia;D_IT;R_EMP;JT_DEV;E010
+E002;Sami;Trabelsi;;sami.trabelsi@company.com;20222222;2021-05-15;1300.00;true;Tunisia;D_IT;R_EMP;JT_BA;E010
+E010;Mouna;Jaziri;;mouna.jaziri@company.com;20333333;2019-03-01;2500.00;true;Tunisia;D_IT;R_MGR;JT_TL;E020
+E020;Karim;Mansour;;karim.mansour@company.com;20444444;2017-07-01;4000.00;true;Tunisia;D_IT;R_DIR;JT_SAPDIR;E100
+E030;Nadia;Ben Amor;;nadia.benamor@company.com;20555555;2020-09-01;2200.00;true;Tunisia;D_HR;R_RH;JT_RH;E100
+E100;Salma;Gharbi;;salma.gharbi@company.com;20666666;2015-01-01;6000.00;true;Tunisia;D_HR;R_DRH;JT_DRH;
