@@ -40,21 +40,22 @@ entity Employees : managed {
         jobTitle    : Association to JobTitles;
         manager     : Association to Employees;
 }
-entity LeaveRequests : managed {
-    key ID              : String(10);
-        requester       : Association to Employees;
-        startDate       : Date;
-        endDate         : Date;
-        reason          : String(1000);
-        status          : String(30);
-        statusCriticality: Integer;
-        workflowLevel   : Integer;
-        currentApprover : Association to Employees;
-        submittedAt     : Timestamp;
-        finalDecisionAt : Timestamp;
 
-        approvals       : Composition of many LeaveApprovals
-                            on approvals.leaveRequest = $self;
+entity LeaveRequests : managed {
+    key ID               : String(10);
+        requester        : Association to Employees;
+        startDate        : Date;
+        endDate          : Date;
+        reason           : String(1000);
+        status           : String(30);
+        statusCriticality: Integer;
+        workflowLevel    : Integer;
+        currentApprover  : Association to Employees;
+        submittedAt      : Timestamp;
+        finalDecisionAt  : Timestamp;
+
+        approvals        : Composition of many LeaveApprovals
+                             on approvals.leaveRequest = $self;
 }
 
 entity LeaveApprovals : managed {
@@ -89,7 +90,7 @@ entity PromotionRequests : managed {
 }
 
 entity PromotionFeedbacks : managed {
-    key ID                  : String(10);
+    key ID                  : UUID;
         promotionRequest    : Association to PromotionRequests;
         author              : Association to Employees;
         authorRole          : String(30);
@@ -97,6 +98,7 @@ entity PromotionFeedbacks : managed {
         recommendation      : String(30);
         createdAt           : Timestamp;
 }
+
 entity Notifications : managed {
     key ID                : String(10);
         recipient         : Association to Employees;

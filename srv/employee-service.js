@@ -1,7 +1,42 @@
 import cds from '@sap/cds';
 
 export default cds.service.impl(async function () {
-  const { Employees, LeaveRequests, LeaveApprovals, PromotionRequests } = this.entities;
+  const { Employees, LeaveRequests, LeaveApprovals, PromotionRequests, PromotionFeedbacks, Notifications } = this.entities;
+
+  const createNotificationIfMissing = async ({
+    recipient_ID,
+    type,
+    title,
+    message,
+    relatedEntityType,
+    relatedEntityID
+  }) => {
+    if (!recipient_ID || !relatedEntityID) return;
+
+    const existing = await SELECT.one
+      .from(Notifications)
+      .columns('ID')
+      .where({
+        type,
+        relatedEntityType,
+        relatedEntityID,
+        recipient_ID
+      });
+
+    if (!existing) {
+      await INSERT.into(Notifications).entries({
+        ID: `NTF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recipient_ID,
+        type,
+        title,
+        message,
+        relatedEntityType,
+        relatedEntityID,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+  };
 
   this.after('READ', Employees, async (result) => {
     const rows = Array.isArray(result) ? result : [result];
@@ -52,6 +87,23 @@ export default cds.service.impl(async function () {
     }
   });
 
+  this.after(['CREATE', 'UPDATE'], LeaveRequests, async (data) => {
+    const rows = Array.isArray(data) ? data : [data];
+
+    for (const row of rows) {
+      if (row?.status === 'SUBMITTED' && row?.currentApprover_ID) {
+        await createNotificationIfMissing({
+          recipient_ID: row.currentApprover_ID,
+          type: 'LEAVE_SUBMITTED',
+          title: 'New Leave Request',
+          message: `A new leave request ${row.ID} requires your approval`,
+          relatedEntityType: 'LeaveRequest',
+          relatedEntityID: row.ID
+        });
+      }
+    }
+  });
+
   this.before(['CREATE', 'UPDATE'], PromotionRequests, async (req) => {
     const data = req.data;
 
@@ -86,6 +138,40 @@ export default cds.service.impl(async function () {
     }
   });
 
+  this.after(['CREATE', 'UPDATE'], PromotionRequests, async (data) => {
+    const rows = Array.isArray(data) ? data : [data];
+
+    for (const row of rows) {
+      if (row?.status === 'SUBMITTED' && row?.currentApprover_ID) {
+        await createNotificationIfMissing({
+          recipient_ID: row.currentApprover_ID,
+          type: 'PROMOTION_SUBMITTED',
+          title: 'New Promotion Request',
+          message: `A new promotion request ${row.ID} requires your approval`,
+          relatedEntityType: 'PromotionRequest',
+          relatedEntityID: row.ID
+        });
+      }
+    }
+  });
+
+  this.before('CREATE', PromotionFeedbacks, async (req) => {
+    const data = req.data;
+
+    if (!data.createdAt) {
+      data.createdAt = new Date().toISOString();
+    }
+
+    if (data.promotionRequest_ID) {
+      await UPDATE(PromotionRequests)
+        .set({
+          status: 'IN_REVIEW',
+          statusCriticality: 2
+        })
+        .where({ ID: data.promotionRequest_ID });
+    }
+  });
+
   this.on('approveLeaveRequest', async (req) => {
     const leaveRequestId = req.params[0].ID;
 
@@ -99,7 +185,7 @@ export default cds.service.impl(async function () {
 
     const leaveRequest = await SELECT.one
       .from(LeaveRequests)
-      .columns('ID', 'currentApprover_ID', 'workflowLevel')
+      .columns('ID', 'requester_ID', 'currentApprover_ID', 'workflowLevel')
       .where({ ID: leaveRequestId });
 
     await INSERT.into(LeaveApprovals).entries({
@@ -112,6 +198,20 @@ export default cds.service.impl(async function () {
       level: leaveRequest?.workflowLevel || 1,
       decidedAt: new Date().toISOString()
     });
+
+    if (leaveRequest?.requester_ID) {
+      await INSERT.into(Notifications).entries({
+        ID: `NTF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recipient_ID: leaveRequest.requester_ID,
+        type: 'LEAVE_APPROVED',
+        title: 'Leave Request Approved',
+        message: `Your leave request ${leaveRequestId} has been approved successfully`,
+        relatedEntityType: 'LeaveRequest',
+        relatedEntityID: leaveRequestId,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
 
     req.info('Leave request has been approved successfully');
   });
@@ -129,7 +229,7 @@ export default cds.service.impl(async function () {
 
     const leaveRequest = await SELECT.one
       .from(LeaveRequests)
-      .columns('ID', 'currentApprover_ID', 'workflowLevel')
+      .columns('ID', 'requester_ID', 'currentApprover_ID', 'workflowLevel')
       .where({ ID: leaveRequestId });
 
     await INSERT.into(LeaveApprovals).entries({
@@ -142,6 +242,20 @@ export default cds.service.impl(async function () {
       level: leaveRequest?.workflowLevel || 1,
       decidedAt: new Date().toISOString()
     });
+
+    if (leaveRequest?.requester_ID) {
+      await INSERT.into(Notifications).entries({
+        ID: `NTF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recipient_ID: leaveRequest.requester_ID,
+        type: 'LEAVE_REJECTED',
+        title: 'Leave Request Rejected',
+        message: `Your leave request ${leaveRequestId} has been rejected`,
+        relatedEntityType: 'LeaveRequest',
+        relatedEntityID: leaveRequestId,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
 
     req.info('Leave request has been rejected successfully');
   });
@@ -157,6 +271,25 @@ export default cds.service.impl(async function () {
       })
       .where({ ID: promotionRequestId });
 
+    const promotionRequest = await SELECT.one
+      .from(PromotionRequests)
+      .columns('requester_ID')
+      .where({ ID: promotionRequestId });
+
+    if (promotionRequest?.requester_ID) {
+      await INSERT.into(Notifications).entries({
+        ID: `NTF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recipient_ID: promotionRequest.requester_ID,
+        type: 'PROMOTION_APPROVED',
+        title: 'Promotion Request Approved',
+        message: `Your promotion request ${promotionRequestId} has been approved successfully`,
+        relatedEntityType: 'PromotionRequest',
+        relatedEntityID: promotionRequestId,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+
     req.info('Promotion request has been approved successfully');
   });
 
@@ -170,6 +303,25 @@ export default cds.service.impl(async function () {
         finalDecisionAt: new Date().toISOString()
       })
       .where({ ID: promotionRequestId });
+
+    const promotionRequest = await SELECT.one
+      .from(PromotionRequests)
+      .columns('requester_ID')
+      .where({ ID: promotionRequestId });
+
+    if (promotionRequest?.requester_ID) {
+      await INSERT.into(Notifications).entries({
+        ID: `NTF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        recipient_ID: promotionRequest.requester_ID,
+        type: 'PROMOTION_REJECTED',
+        title: 'Promotion Request Rejected',
+        message: `Your promotion request ${promotionRequestId} has been rejected`,
+        relatedEntityType: 'PromotionRequest',
+        relatedEntityID: promotionRequestId,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
 
     req.info('Promotion request has been rejected successfully');
   });

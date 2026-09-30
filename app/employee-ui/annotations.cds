@@ -71,11 +71,6 @@ annotate service.Employees with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'Employee ID',
-                Value : ID,
-            },
-            {
-                $Type : 'UI.DataField',
                 Label : 'First Name',
                 Value : firstName,
             },

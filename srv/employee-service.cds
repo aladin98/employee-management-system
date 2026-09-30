@@ -26,4 +26,6 @@ service EmployeeService {
 };
 
     entity PromotionFeedbacks as projection on hr.PromotionFeedbacks;
+
+    entity Notifications as projection on hr.Notifications;
 }

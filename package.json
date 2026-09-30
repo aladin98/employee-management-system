@@ -13,7 +13,9 @@
     "start": "cds-serve",
     "watch-employee-ui": "cds watch --open my.company.hr.employeeui/index.html?sap-ui-xx-viewCache=false --livereload false",
     "watch-leave-requests-ui": "cds watch --open my.company.hr.leaverequestsui/index.html?sap-ui-xx-viewCache=false --livereload false",
-    "watch-promotions-ui": "cds watch --open my.company.hr.promotionsui/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-promotions-ui": "cds watch --open my.company.hr.promotionsui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-promotion-feedbacks-ui": "cds watch --open my.company.hr.promotionfeedbacksui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-notifications-ui": "cds watch --open my.company.hr.notificationsui/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "workspaces": [
@@ -22,6 +24,8 @@
   "sapux": [
     "app/employee-ui",
     "app/leave-requests-ui",
-    "app/promotions-ui"
+    "app/promotions-ui",
+    "app/promotion-feedbacks-ui",
+    "app/notifications-ui"
   ]
 }

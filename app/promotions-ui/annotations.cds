@@ -25,11 +25,6 @@ annotate service.PromotionRequests with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'Request ID',
-            Value : ID,
-        },
-        {
-            $Type : 'UI.DataField',
             Label : 'Requester',
             Value : requester_ID,
         },
@@ -123,6 +118,12 @@ annotate service.PromotionRequests with @(
             ID : 'GeneralInformationFacet',
             Label : 'General Information',
             Target : '@UI.FieldGroup#GeneralInformation',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'FeedbacksFacet',
+            Label : 'Feedbacks',
+            Target : 'feedbacks/@UI.LineItem',
         }
     ]
 );
