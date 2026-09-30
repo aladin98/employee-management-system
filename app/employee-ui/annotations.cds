@@ -25,21 +25,16 @@ annotate service.Employees with {
     jobTitle   @Common.Text : jobTitle.title
                @Common.TextArrangement : #TextOnly;
 
-    manager    @Common.Text : fullName
+    manager    @Common.Text : manager.fullName
                @Common.TextArrangement : #TextOnly;
 };
 
 annotate service.Employees with @(
     UI.SelectionFields : [
         ID,
-        firstName,
+        firstName
     ],
     UI.LineItem : [
-        {
-            $Type : 'UI.DataField',
-            Label : 'Employee ID',
-            Value : ID,
-        },
         {
             $Type : 'UI.DataField',
             Label : 'First Name',
@@ -49,21 +44,6 @@ annotate service.Employees with @(
             $Type : 'UI.DataField',
             Label : 'Last Name',
             Value : lastName,
-        },
-        {
-            $Type : 'UI.DataField',
-            Label : 'Email',
-            Value : email,
-        },
-        {
-            $Type : 'UI.DataField',
-            Label : 'Phone',
-            Value : phone,
-        },
-        {
-            $Type : 'UI.DataField',
-            Label : 'Country',
-            Value : country,
         },
         {
             $Type : 'UI.DataField',

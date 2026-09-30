@@ -1,0 +1,5 @@
+ID;requester_ID;startDate;endDate;reason;status;workflowLevel;currentApprover_ID;submittedAt;finalDecisionAt
+LR001;E001;2026-10-10;2026-10-15;Annual leave;SUBMITTED;1;E010;2026-09-29T10:00:00Z;
+LR002;E010;2026-10-20;2026-10-22;Personal leave;SUBMITTED;1;E020;2026-09-29T11:00:00Z;
+LR003;E020;2026-11-05;2026-11-07;Business travel recovery;SUBMITTED;1;E100;2026-09-29T12:00:00Z;
+LR004;E030;2026-10-25;2026-10-26;Family reason;SUBMITTED;1;E100;2026-09-29T13:00:00Z;

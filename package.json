@@ -11,13 +11,17 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-employee-ui": "cds watch --open my.company.hr.employeeui/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-employee-ui": "cds watch --open my.company.hr.employeeui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-leave-requests-ui": "cds watch --open my.company.hr.leaverequestsui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-promotions-ui": "cds watch --open my.company.hr.promotionsui/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "workspaces": [
     "app/*"
   ],
   "sapux": [
-    "app/employee-ui"
+    "app/employee-ui",
+    "app/leave-requests-ui",
+    "app/promotions-ui"
   ]
 }

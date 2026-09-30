@@ -1,0 +1,4 @@
+ID;requester_ID;employeeConcerned_ID;currentJobTitle_ID;requestedJobTitle_ID;currentSalary;requestedSalary;justification;status;statusCriticality;workflowLevel;currentApprover_ID;submittedAt;finalDecisionAt
+PR001;E010;E001;JT_DEV;JT_BA;1200.00;1500.00;Strong performance and increased responsibilities;SUBMITTED;2;1;E020;2026-09-29T10:30:00Z;
+PR002;E020;E010;JT_TL;JT_MGR;2500.00;3200.00;Promotion to management role;SUBMITTED;2;1;E100;2026-09-29T11:30:00Z;
+PR003;E030;E030;JT_RH;JT_DRH;2200.00;3000.00;Extended HR responsibilities;SUBMITTED;2;1;E100;2026-09-29T12:30:00Z;
