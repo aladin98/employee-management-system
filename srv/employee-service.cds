@@ -8,6 +8,18 @@ service EmployeeService {
         notifications : Integer;
     }
 
+    type CurrentProfile {
+        ID         : String(10);
+        fullName   : String(40);
+        email      : String(50);
+        phone      : String(16);
+        hireDate   : Date;
+        department : String(100);
+        role       : String(50);
+        jobTitle   : String(50);
+        manager    : String(100);
+    }
+
     entity Departments as projection on hr.Departments;
     entity Roles       as projection on hr.Roles;
     entity JobTitles   as projection on hr.JobTitles;
@@ -45,4 +57,5 @@ service EmployeeService {
     entity Notifications as projection on hr.Notifications;
 
     function getDashboardStats() returns DashboardStats;
+    function getCurrentProfile() returns CurrentProfile;
 }

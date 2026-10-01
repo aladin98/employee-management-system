@@ -52,6 +52,7 @@ sap.ui.define([
         openPromotionRequests: "Ouvrir les demandes de promotion",
         openNotifications: "Ouvrir les notifications",
         statsLoadError: "Impossible de charger les statistiques du tableau de bord",
+        profileLoadError: "Impossible de charger le profil utilisateur",
         logoutMessage: "La déconnexion sera gérée plus tard via SAP Launchpad / Identity."
       } : {
         appTitle: "Employee Management System",
@@ -93,28 +94,26 @@ sap.ui.define([
         openPromotionRequests: "Open Promotion Requests",
         openNotifications: "Open Notifications",
         statsLoadError: "Unable to load dashboard statistics",
+        profileLoadError: "Unable to load user profile",
         logoutMessage: "Logout will be handled later via SAP Launchpad / Identity."
       };
 
-      var sHireDate = "2021-05-15";
-      var sYearsHere = this._calculateYearsHere(sHireDate, bFrench);
-
       var oHomeModel = new JSONModel({
         texts: oTexts,
-        userName: "Mouna Jaziri",
-        role: "Manager",
-        department: bFrench ? "Technologies de l'information" : "Information Technology",
+        userName: "Demo User",
+        role: "",
+        department: "",
         selectedLanguage: sSelectedLanguage,
         profile: {
-          fullName: "Mouna Jaziri",
-          role: "Manager",
-          jobTitle: bFrench ? "Chef d'équipe" : "Team Lead",
-          department: bFrench ? "Technologies de l'information" : "Information Technology",
-          manager: "Karim Mansour",
-          email: "mouna.jaziri@company.com",
-          phone: "20333333",
-          hireDate: sHireDate,
-          yearsHere: sYearsHere
+          fullName: "",
+          role: "",
+          jobTitle: "",
+          department: "",
+          manager: "",
+          email: "",
+          phone: "",
+          hireDate: "",
+          yearsHere: ""
         },
         stats: {
           employees: "0",
@@ -126,9 +125,12 @@ sap.ui.define([
 
       this.getView().setModel(oHomeModel, "home");
       this._loadDashboardStats();
+      this._loadCurrentProfile();
     },
 
-    _calculateYearsHere: function (sHireDate, bFrench) {
+    _calculateYearsHere: function (sHireDate) {
+      if (!sHireDate) return "";
+
       var oHireDate = new Date(sHireDate);
       var oToday = new Date();
       var iYears = oToday.getFullYear() - oHireDate.getFullYear();
@@ -137,6 +139,9 @@ sap.ui.define([
       if (iMonths < 0 || (iMonths === 0 && oToday.getDate() < oHireDate.getDate())) {
         iYears--;
       }
+
+      var sLanguage = Configuration.getLanguage();
+      var bFrench = sLanguage && sLanguage.toLowerCase().startsWith("fr");
 
       if (bFrench) {
         return iYears <= 1 ? iYears + " an" : iYears + " ans";
@@ -164,6 +169,38 @@ sap.ui.define([
         })
         .catch(function () {
           MessageToast.show(oModel.getProperty("/texts/statsLoadError"));
+        });
+    },
+
+    _loadCurrentProfile: function () {
+      var oModel = this.getView().getModel("home");
+      var sUrl = window.location.origin + "/odata/v4/employee/getCurrentProfile()";
+      var that = this;
+
+      fetch(sUrl)
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("Failed to load user profile");
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          oModel.setProperty("/userName", data.fullName || "");
+          oModel.setProperty("/role", data.role || "");
+          oModel.setProperty("/department", data.department || "");
+
+          oModel.setProperty("/profile/fullName", data.fullName || "");
+          oModel.setProperty("/profile/role", data.role || "");
+          oModel.setProperty("/profile/jobTitle", data.jobTitle || "");
+          oModel.setProperty("/profile/department", data.department || "");
+          oModel.setProperty("/profile/manager", data.manager || "");
+          oModel.setProperty("/profile/email", data.email || "");
+          oModel.setProperty("/profile/phone", data.phone || "");
+          oModel.setProperty("/profile/hireDate", data.hireDate || "");
+          oModel.setProperty("/profile/yearsHere", that._calculateYearsHere(data.hireDate));
+        })
+        .catch(function () {
+          MessageToast.show(oModel.getProperty("/texts/profileLoadError"));
         });
     },
 

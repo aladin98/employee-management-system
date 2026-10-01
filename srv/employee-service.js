@@ -368,6 +368,35 @@ export default cds.service.impl(async function () {
     }
   });
 
+  const getCurrentUserEmail = (req) => {
+    return (
+      req.user?.attr?.email ||
+      req.user?.email ||
+      req.user?.id ||
+      null
+    );
+  };
+
+  const getDefaultProfileEmployee = async () => {
+    return await SELECT.one
+      .from(Employees)
+      .columns(
+        'ID',
+        'firstName',
+        'lastName',
+        'fullName',
+        'email',
+        'phone',
+        'hireDate',
+        'department.name as departmentName',
+        'role.name as roleName',
+        'jobTitle.title as jobTitleName',
+        'manager.firstName as managerFirstName',
+        'manager.lastName as managerLastName'
+      )
+      .where({ ID: 'E010' });
+  };
+
   this.after('READ', PromotionRequests, async (result, req) => {
     const rows = Array.isArray(result) ? result : [result];
     if (!rows.length) return;
@@ -781,6 +810,55 @@ export default cds.service.impl(async function () {
       leaveRequests: Number(leaveResult?.count || 0),
       promotions: Number(promotionResult?.count || 0),
       notifications: Number(notificationResult?.count || 0)
+    };
+  });
+  this.on('getCurrentProfile', async (req) => {
+    const userEmail = getCurrentUserEmail(req);
+
+    let employee = null;
+
+    if (userEmail) {
+      employee = await SELECT.one
+        .from(Employees)
+        .columns(
+          'ID',
+          'firstName',
+          'lastName',
+          'fullName',
+          'email',
+          'phone',
+          'hireDate',
+          'department.name as departmentName',
+          'role.name as roleName',
+          'jobTitle.title as jobTitleName',
+          'manager.firstName as managerFirstName',
+          'manager.lastName as managerLastName'
+        )
+        .where({ email: userEmail });
+    }
+
+    if (!employee) {
+      employee = await getDefaultProfileEmployee();
+    }
+
+    if (!employee) {
+      req.error(404, 'Current employee profile not found');
+      return;
+    }
+
+    const managerFullName =
+      `${employee.managerFirstName || ''} ${employee.managerLastName || ''}`.trim();
+
+    return {
+      ID: employee.ID,
+      fullName: employee.fullName || `${employee.firstName || ''} ${employee.lastName || ''}`.trim(),
+      email: employee.email,
+      phone: employee.phone,
+      hireDate: employee.hireDate,
+      department: employee.departmentName || '',
+      role: employee.roleName || '',
+      jobTitle: employee.jobTitleName || '',
+      manager: managerFullName
     };
   });
 });
