@@ -1,0 +1,30 @@
+.homeShellBar {
+  background: #ffffff;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 0 1rem;
+  min-height: 3.5rem;
+}
+
+.homeHeroSection {
+  padding: 2rem;
+  background: linear-gradient(90deg, #eef4fb 0%, #ffffff 100%);
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.homeStatsSection {
+  padding: 1rem 1.5rem 0 1.5rem;
+}
+
+.homeKpiTile {
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  min-width: 12rem;
+}
+
+.homeSectionContainer {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.homeAppTile {
+  margin: 0.5rem;
+}

@@ -1,0 +1,14 @@
+{
+  "appTitle": "Employee Management System",
+  "welcomeTitle": "Welcome back",
+  "welcomeText": "Access employee administration, leave approvals, promotion workflows and notifications from one central space.",
+  "userName": "Demo User",
+  "role": "HR Workflow Administrator",
+  "department": "Human Resources",
+  "stats": {
+    "employees": "0",
+    "leave": "0",
+    "promotions": "0",
+    "notifications": "0"
+  }
+}

@@ -25,37 +25,37 @@ annotate service.PromotionRequests with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'Requester',
+            Label : '{@i18n>requester}',
             Value : requester_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Employee Concerned',
+            Label : '{@i18n>employeeConcerned}',
             Value : employeeConcerned_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Current Job Title',
+            Label : '{@i18n>currentJobTitle}',
             Value : currentJobTitle_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Requested Job Title',
+            Label : '{@i18n>requestedJobTitle}',
             Value : requestedJobTitle_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Current Salary',
+            Label : '{@i18n>currentSalary}',
             Value : currentSalary,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Requested Salary',
+            Label : '{@i18n>requestedSalary}',
             Value : requestedSalary,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Status',
+            Label : '{@i18n>status}',
             Value : status,
             Criticality : statusCriticality,
         }
@@ -63,13 +63,15 @@ annotate service.PromotionRequests with @(
     UI.Identification : [
         {
             $Type : 'UI.DataFieldForAction',
-            Label : 'Approve',
-            Action : 'EmployeeService.approvePromotionRequest'
+            Label : '{@i18n>approve}',
+            Action : 'EmployeeService.approvePromotionRequest',
+            ![@Core.OperationAvailable] : canApprove
         },
         {
             $Type : 'UI.DataFieldForAction',
-            Label : 'Reject',
-            Action : 'EmployeeService.rejectPromotionRequest'
+            Label : '{@i18n>reject}',
+            Action : 'EmployeeService.rejectPromotionRequest',
+            ![@Core.OperationAvailable] : canReject
         }
     ],
     UI.FieldGroup #GeneralInformation : {
@@ -77,37 +79,37 @@ annotate service.PromotionRequests with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'Requester',
+                Label : '{@i18n>requester}',
                 Value : requester_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Employee Concerned',
+                Label : '{@i18n>employeeConcerned}',
                 Value : employeeConcerned_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Current Job Title',
+                Label : '{@i18n>currentJobTitle}',
                 Value : currentJobTitle_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Requested Job Title',
+                Label : '{@i18n>requestedJobTitle}',
                 Value : requestedJobTitle_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Current Salary',
+                Label : '{@i18n>currentSalary}',
                 Value : currentSalary,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Requested Salary',
+                Label : '{@i18n>requestedSalary}',
                 Value : requestedSalary,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Justification',
+                Label : '{@i18n>justification}',
                 Value : justification,
             }
         ],
@@ -116,13 +118,13 @@ annotate service.PromotionRequests with @(
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
-            Label : 'General Information',
+            Label : '{@i18n>generalInformation}',
             Target : '@UI.FieldGroup#GeneralInformation',
         },
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'FeedbacksFacet',
-            Label : 'Feedbacks',
+            Label : '{@i18n>feedbacks}',
             Target : 'feedbacks/@UI.LineItem',
         }
     ]

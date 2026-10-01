@@ -21,32 +21,27 @@ annotate service.LeaveRequests with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'Request ID',
-            Value : ID,
-        },
-        {
-            $Type : 'UI.DataField',
-            Label : 'Requester',
+            Label : '{@i18n>requester}',
             Value : requester_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Start Date',
+            Label : '{@i18n>startDate}',
             Value : startDate,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'End Date',
+            Label : '{@i18n>endDate}',
             Value : endDate,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Reason',
+            Label : '{@i18n>reason}',
             Value : reason,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Status',
+            Label : '{@i18n>status}',
             Value : status,
             Criticality : statusCriticality,
         }
@@ -54,13 +49,15 @@ annotate service.LeaveRequests with @(
     UI.Identification : [
         {
             $Type : 'UI.DataFieldForAction',
-            Label : 'Approve',
-            Action : 'EmployeeService.approveLeaveRequest'
+            Label : '{@i18n>approve}',
+            Action : 'EmployeeService.approveLeaveRequest',
+            ![@Core.OperationAvailable] : canApprove
         },
         {
             $Type : 'UI.DataFieldForAction',
-            Label : 'Reject',
-            Action : 'EmployeeService.rejectLeaveRequest'
+            Label : '{@i18n>reject}',
+            Action : 'EmployeeService.rejectLeaveRequest',
+            ![@Core.OperationAvailable] : canReject
         }
     ],
     UI.FieldGroup #GeneralInformation : {
@@ -68,22 +65,22 @@ annotate service.LeaveRequests with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'Requester',
+                Label : '{@i18n>requester}',
                 Value : requester_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Start Date',
+                Label : '{@i18n>startDate}',
                 Value : startDate,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'End Date',
+                Label : '{@i18n>endDate}',
                 Value : endDate,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Reason',
+                Label : '{@i18n>reason}',
                 Value : reason,
             }
         ]
@@ -92,7 +89,7 @@ annotate service.LeaveRequests with @(
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
-            Label : 'General Information',
+            Label : '{@i18n>generalInformation}',
             Target : '@UI.FieldGroup#GeneralInformation',
         }
     ]

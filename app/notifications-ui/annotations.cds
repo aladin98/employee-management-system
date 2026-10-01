@@ -13,32 +13,32 @@ annotate service.Notifications with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'Recipient',
+            Label : '{@i18n>recipient}',
             Value : recipient_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Type',
+            Label : '{@i18n>type}',
             Value : type,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Title',
+            Label : '{@i18n>title}',
             Value : title,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Message',
+            Label : '{@i18n>message}',
             Value : message,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Read',
+            Label : '{@i18n>read}',
             Value : isRead,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Created At',
+            Label : '{@i18n>createdAt}',
             Value : createdAt,
         }
     ],
@@ -47,42 +47,42 @@ annotate service.Notifications with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'Recipient',
+                Label : '{@i18n>recipient}',
                 Value : recipient_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Type',
+                Label : '{@i18n>type}',
                 Value : type,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Title',
+                Label : '{@i18n>title}',
                 Value : title,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Message',
+                Label : '{@i18n>message}',
                 Value : message,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Related Entity Type',
+                Label : '{@i18n>relatedEntityType}',
                 Value : relatedEntityType,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Related Entity ID',
+                Label : '{@i18n>relatedEntityID}',
                 Value : relatedEntityID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Read',
+                Label : '{@i18n>read}',
                 Value : isRead,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Created At',
+                Label : '{@i18n>createdAt}',
                 Value : createdAt,
             }
         ]
@@ -91,7 +91,7 @@ annotate service.Notifications with @(
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
-            Label : 'General Information',
+            Label : '{@i18n>generalInformation}',
             Target : '@UI.FieldGroup#GeneralInformation',
         }
     ]

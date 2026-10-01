@@ -1,0 +1,275 @@
+<mvc:View
+  controllerName="homeui.controller.App"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  xmlns:f="sap.ui.layout.form"
+  xmlns:core="sap.ui.core">
+
+  <App>
+    <pages>
+      <Page showHeader="false">
+        <content>
+          <VBox fitContainer="true">
+
+            <Toolbar class="homeShellBar">
+              <Title text="{home>/texts/appTitle}" level="H3" />
+              <ToolbarSpacer />
+              <Button text="{home>/texts/home}" type="Transparent" />
+              <Button
+                text="{home>/userName}"
+                icon="sap-icon://employee"
+                type="Transparent"
+                press=".onOpenUserMenu"
+                tooltip="{home>/texts/myProfile}" />
+              <Text text="{home>/department}" class="sapUiTinyMarginBegin sapUiTinyMarginEnd" />
+            </Toolbar>
+
+            <VBox class="homeHeroSection">
+              <Title text="{home>/texts/welcomeTitle}" level="H1" />
+              <Text text="{home>/texts/welcomeText}" wrapping="true" class="sapUiSmallMarginTop" />
+            </VBox>
+
+            <HBox wrap="Wrap" class="homeStatsSection">
+              <GenericTile class="homeKpiTile">
+                <TileContent footer="{home>/texts/employees}">
+                  <content>
+                    <NumericContent value="{home>/stats/employees}" icon="sap-icon://employee" />
+                  </content>
+                </TileContent>
+              </GenericTile>
+
+              <GenericTile class="homeKpiTile">
+                <TileContent footer="{home>/texts/pendingLeaveRequests}">
+                  <content>
+                    <NumericContent value="{home>/stats/leave}" icon="sap-icon://calendar" valueColor="Critical" />
+                  </content>
+                </TileContent>
+              </GenericTile>
+
+              <GenericTile class="homeKpiTile">
+                <TileContent footer="{home>/texts/promotionRequests}">
+                  <content>
+                    <NumericContent value="{home>/stats/promotions}" icon="sap-icon://business-objects-experience" valueColor="Neutral" />
+                  </content>
+                </TileContent>
+              </GenericTile>
+
+              <GenericTile class="homeKpiTile">
+                <TileContent footer="{home>/texts/unreadNotifications}">
+                  <content>
+                    <NumericContent value="{home>/stats/notifications}" icon="sap-icon://bell" valueColor="Good" />
+                  </content>
+                </TileContent>
+              </GenericTile>
+            </HBox>
+
+            <VBox class="homeSectionContainer">
+              <Title text="{home>/texts/applications}" level="H3" class="sapUiSmallMarginBottom" />
+              <l:Grid defaultSpan="L3 M6 S12" hSpacing="1" vSpacing="1">
+
+                <GenericTile
+                  header="{home>/texts/employees}"
+                  subheader="{home>/texts/employeesSub}"
+                  press=".onOpenEmployees"
+                  class="homeAppTile">
+                  <tileContent>
+                    <TileContent footer="{home>/texts/masterData}">
+                      <content>
+                        <NumericContent value="EMP" icon="sap-icon://employee" />
+                      </content>
+                    </TileContent>
+                  </tileContent>
+                </GenericTile>
+
+                <GenericTile
+                  header="{home>/texts/pendingLeaveRequests}"
+                  subheader="{home>/texts/leaveSub}"
+                  press=".onOpenLeaveRequests"
+                  class="homeAppTile">
+                  <tileContent>
+                    <TileContent footer="{home>/texts/workflow}">
+                      <content>
+                        <NumericContent value="LEV" icon="sap-icon://calendar" />
+                      </content>
+                    </TileContent>
+                  </tileContent>
+                </GenericTile>
+
+                <GenericTile
+                  header="{home>/texts/promotionRequests}"
+                  subheader="{home>/texts/promotionSub}"
+                  press=".onOpenPromotions"
+                  class="homeAppTile">
+                  <tileContent>
+                    <TileContent footer="{home>/texts/workflow}">
+                      <content>
+                        <NumericContent value="PRO" icon="sap-icon://business-objects-experience" />
+                      </content>
+                    </TileContent>
+                  </tileContent>
+                </GenericTile>
+
+                <GenericTile
+                  header="{home>/texts/feedbacks}"
+                  subheader="{home>/texts/feedbackSub}"
+                  press=".onOpenPromotionFeedbacks"
+                  class="homeAppTile">
+                  <tileContent>
+                    <TileContent footer="{home>/texts/history}">
+                      <content>
+                        <NumericContent value="FDB" icon="sap-icon://feedback" />
+                      </content>
+                    </TileContent>
+                  </tileContent>
+                </GenericTile>
+
+                <GenericTile
+                  header="{home>/texts/notifications}"
+                  subheader="{home>/texts/notificationsSub}"
+                  press=".onOpenNotifications"
+                  class="homeAppTile">
+                  <tileContent>
+                    <TileContent footer="{home>/texts/communication}">
+                      <content>
+                        <NumericContent value="NTF" icon="sap-icon://bell" />
+                      </content>
+                    </TileContent>
+                  </tileContent>
+                </GenericTile>
+
+              </l:Grid>
+            </VBox>
+
+            <VBox class="homeSectionContainer">
+              <Title text="{home>/texts/quickActions}" level="H3" class="sapUiSmallMarginBottom" />
+              <HBox wrap="Wrap">
+                <Button
+                  text="{home>/texts/openLeaveRequests}"
+                  type="Emphasized"
+                  press=".onOpenLeaveRequests"
+                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+                <Button
+                  text="{home>/texts/openPromotionRequests}"
+                  press=".onOpenPromotions"
+                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+                <Button
+                  text="{home>/texts/openNotifications}"
+                  press=".onOpenNotifications"
+                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+              </HBox>
+            </VBox>
+
+          </VBox>
+        </content>
+      </Page>
+    </pages>
+  </App>
+
+  <Popover
+    id="userMenuPopover"
+    placement="Bottom"
+    showHeader="false">
+    <List>
+      <StandardListItem
+        title="{home>/texts/myProfile}"
+        type="Active"
+        icon="sap-icon://employee"
+        press=".onProfilePress" />
+      <StandardListItem
+        title="{home>/texts/settings}"
+        type="Active"
+        icon="sap-icon://action-settings"
+        press=".onOpenSettings" />
+      <StandardListItem
+        title="{home>/texts/logout}"
+        type="Active"
+        icon="sap-icon://log"
+        press=".onLogoutPress" />
+    </List>
+  </Popover>
+
+  <Dialog
+    id="profileDialog"
+    title="{home>/texts/myProfile}"
+    contentWidth="32rem"
+    draggable="true"
+    resizable="true">
+
+    <content>
+      <VBox class="sapUiMediumMargin">
+        <ObjectHeader
+          title="{home>/profile/fullName}"
+          number="{home>/profile/jobTitle}"
+          intro="{home>/profile/department}" />
+
+        <f:SimpleForm
+          editable="false"
+          layout="ResponsiveGridLayout"
+          class="sapUiMediumMarginTop">
+          <f:content>
+            <Label text="{home>/texts/role}" />
+            <Text text="{home>/profile/role}" />
+
+            <Label text="{home>/texts/jobTitle}" />
+            <Text text="{home>/profile/jobTitle}" />
+
+            <Label text="{home>/texts/department}" />
+            <Text text="{home>/profile/department}" />
+
+            <Label text="{home>/texts/manager}" />
+            <Text text="{home>/profile/manager}" />
+
+            <Label text="{home>/texts/email}" />
+            <Text text="{home>/profile/email}" />
+
+            <Label text="{home>/texts/phone}" />
+            <Text text="{home>/profile/phone}" />
+
+            <Label text="{home>/texts/hireDate}" />
+            <Text text="{home>/profile/hireDate}" />
+
+            <Label text="{home>/texts/yearsHere}" />
+            <Text text="{home>/profile/yearsHere}" />
+          </f:content>
+        </f:SimpleForm>
+      </VBox>
+    </content>
+
+    <beginButton>
+      <Button text="{home>/texts/close}" press=".onCloseProfileDialog" />
+    </beginButton>
+  </Dialog>
+
+  <Dialog
+    id="settingsDialog"
+    title="{home>/texts/settings}"
+    contentWidth="24rem"
+    draggable="true"
+    resizable="true">
+
+    <content>
+      <VBox class="sapUiMediumMargin">
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+          <f:content>
+            <Label text="{home>/texts/language}" />
+            <Select selectedKey="{home>/selectedLanguage}">
+              <items>
+                <core:Item key="en" text="English" />
+                <core:Item key="fr" text="Français" />
+              </items>
+            </Select>
+          </f:content>
+        </f:SimpleForm>
+      </VBox>
+    </content>
+
+    <beginButton>
+      <Button text="{home>/texts/save}" type="Emphasized" press=".onSaveSettings" />
+    </beginButton>
+    <endButton>
+      <Button text="{home>/texts/close}" press=".onCloseSettingsDialog" />
+    </endButton>
+  </Dialog>
+
+</mvc:View>

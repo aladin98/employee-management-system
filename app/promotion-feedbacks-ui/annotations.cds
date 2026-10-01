@@ -17,32 +17,32 @@ annotate service.PromotionFeedbacks with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'Promotion Request',
+            Label : '{@i18n>promotionRequest}',
             Value : promotionRequest_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Author',
+            Label : '{@i18n>author}',
             Value : author_ID,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Author Role',
+            Label : '{@i18n>authorRole}',
             Value : authorRole,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Feedback',
+            Label : '{@i18n>feedback}',
             Value : feedbackText,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Recommendation',
+            Label : '{@i18n>recommendation}',
             Value : recommendation,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Created At',
+            Label : '{@i18n>createdAt}',
             Value : createdAt,
         }
     ],
@@ -51,32 +51,32 @@ annotate service.PromotionFeedbacks with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'Promotion Request',
+                Label : '{@i18n>promotionRequest}',
                 Value : promotionRequest_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Author',
+                Label : '{@i18n>author}',
                 Value : author_ID,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Author Role',
+                Label : '{@i18n>authorRole}',
                 Value : authorRole,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Feedback',
+                Label : '{@i18n>feedback}',
                 Value : feedbackText,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Recommendation',
+                Label : '{@i18n>recommendation}',
                 Value : recommendation,
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Created At',
+                Label : '{@i18n>createdAt}',
                 Value : createdAt,
             }
         ]
@@ -85,7 +85,7 @@ annotate service.PromotionFeedbacks with @(
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
-            Label : 'General Information',
+            Label : '{@i18n>generalInformation}',
             Target : '@UI.FieldGroup#GeneralInformation',
         }
     ]
