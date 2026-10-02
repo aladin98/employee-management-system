@@ -42,6 +42,13 @@ annotate service.Notifications with @(
             Value : createdAt,
         }
     ],
+    UI.Identification : [
+        {
+            $Type : 'UI.DataFieldForAction',
+            Label : '{@i18n>markAsRead}',
+            Action : 'EmployeeService.markAsRead'
+        }
+    ],
     UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [

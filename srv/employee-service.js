@@ -861,4 +861,29 @@ export default cds.service.impl(async function () {
       manager: managerFullName
     };
   });
+
+  this.on('markAsRead', async (req) => {
+    const notificationId = req.params[0].ID;
+
+    const existingNotification = await SELECT.one
+      .from(Notifications)
+      .columns('ID', 'isRead')
+      .where({ ID: notificationId });
+
+    if (!existingNotification) {
+      req.error(404, 'Notification not found');
+      return;
+    }
+
+    if (existingNotification.isRead) {
+      req.info('Notification is already marked as read');
+      return;
+    }
+
+    await UPDATE(Notifications)
+      .set({ isRead: true })
+      .where({ ID: notificationId });
+
+    req.info('Notification marked as read');
+  });
 });
