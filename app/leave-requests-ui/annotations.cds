@@ -136,3 +136,10 @@ annotate service.LeaveRequests with {
         ],
     }
 };
+
+annotate service.LeaveRequests with {
+    requester       @Common.FieldControl : #ReadOnly;
+    currentApprover @Common.FieldControl : #ReadOnly;
+    status          @Common.FieldControl : #ReadOnly;
+    workflowLevel   @Common.FieldControl : #ReadOnly;
+};

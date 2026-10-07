@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@sap/cds": "^10"
+    "@sap/cds": "^10",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^3",

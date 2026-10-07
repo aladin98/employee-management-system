@@ -1,6 +1,6 @@
-ID;name;description
-R_EMP;Employee;Standard employee
-R_MGR;Manager;Team manager
-R_DIR;Director;Department director
-R_RH;RH;Human Resources
-R_DRH;DRH;HR Director
+ID,name,description
+R_EMP,Employee,Regular employee
+R_MGR,Manager,Team manager
+R_DIR,Director,Department director
+R_RH,RH,Human resources
+R_DRH,DRH,Human resources director

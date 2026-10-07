@@ -54,8 +54,17 @@ service EmployeeService {
 
     entity PromotionFeedbacks as projection on hr.PromotionFeedbacks;
 
-    entity Notifications as projection on hr.Notifications;
+    entity Notifications as projection on hr.Notifications actions {
+        action markAsRead();
+    };
 
     function getDashboardStats() returns DashboardStats;
     function getCurrentProfile() returns CurrentProfile;
+    function testS4Roles() returns String;
+    function testS4LeaveRequests() returns String;
+    function testS4PromotionRequests() returns String;
+    function createS4LeaveRequest() returns String;
+    function createS4PromotionRequest() returns String;
+    function testS4PromotionFeedbacks() returns String;
+    
 }

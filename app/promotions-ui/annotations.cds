@@ -20,7 +20,8 @@ annotate service.PromotionRequests with {
 annotate service.PromotionRequests with @(
     UI.SelectionFields : [
         ID,
-        status
+        status,
+        employeeConcerned_ID
     ],
     UI.LineItem : [
         {
@@ -74,6 +75,31 @@ annotate service.PromotionRequests with @(
             ![@Core.OperationAvailable] : canReject
         }
     ],
+    UI.FieldGroup #CreateRequest : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>employeeConcerned}',
+                Value : employeeConcerned_ID,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>requestedJobTitle}',
+                Value : requestedJobTitle_ID,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>requestedSalary}',
+                Value : requestedSalary,
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>justification}',
+                Value : justification,
+            }
+        ],
+    },
     UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [
@@ -227,6 +253,9 @@ annotate service.PromotionRequests with {
 annotate service.PromotionRequests with {
     currentJobTitle @Common.FieldControl : #ReadOnly;
     currentSalary   @Common.FieldControl : #ReadOnly;
+    currentApprover @Common.FieldControl : #ReadOnly;
+    status          @Common.FieldControl : #ReadOnly;
+    workflowLevel   @Common.FieldControl : #ReadOnly;
 };
 
 annotate service.PromotionRequests with @Common.SideEffects #EmployeeConcernedChanged : {
