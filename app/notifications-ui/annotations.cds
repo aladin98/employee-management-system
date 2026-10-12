@@ -6,6 +6,16 @@ annotate service.Notifications with {
 };
 
 annotate service.Notifications with @(
+
+    UI.HeaderInfo : {
+        TypeName : '{@i18n>Notification}',
+        TypeNamePlural : '{@i18n>Notifications}',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : title
+        }
+    },
+    
     UI.SelectionFields : [
         type,
         isRead

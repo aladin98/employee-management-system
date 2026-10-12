@@ -1,10 +1,5 @@
 using EmployeeService as service from '../../srv/employee-service';
 
-annotate service.Employees with {
-    ID @Common.Text : fullName
-       @Common.TextArrangement : #TextOnly;
-};
-
 annotate service.LeaveRequests with {
     requester       @Common.Text : requester.fullName
                     @Common.TextArrangement : #TextOnly;
@@ -14,6 +9,15 @@ annotate service.LeaveRequests with {
 };
 
 annotate service.LeaveRequests with @(
+    UI.HeaderInfo : {
+        TypeName : '{@i18n>LeaveRequest}',
+        TypeNamePlural : '{@i18n>LeaveRequests}',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : ID
+        }
+    },
+
     UI.SelectionFields : [
         ID,
         status
@@ -22,28 +26,28 @@ annotate service.LeaveRequests with @(
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requester}',
-            Value : requester_ID,
+            Value : requester.fullName
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>startDate}',
-            Value : startDate,
+            Value : startDate
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>endDate}',
-            Value : endDate,
+            Value : endDate
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>reason}',
-            Value : reason,
+            Value : reason
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>status}',
             Value : status,
-            Criticality : statusCriticality,
+            Criticality : statusCriticality
         }
     ],
     UI.Identification : [
@@ -66,22 +70,27 @@ annotate service.LeaveRequests with @(
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requester}',
-                Value : requester_ID,
+                Value : requester.fullName
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>currentApprover}',
+                Value : currentApprover.fullName
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>startDate}',
-                Value : startDate,
+                Value : startDate
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>endDate}',
-                Value : endDate,
+                Value : endDate
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>reason}',
-                Value : reason,
+                Value : reason
             }
         ]
     },
@@ -90,7 +99,7 @@ annotate service.LeaveRequests with @(
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
             Label : '{@i18n>generalInformation}',
-            Target : '@UI.FieldGroup#GeneralInformation',
+            Target : '@UI.FieldGroup#GeneralInformation'
         }
     ]
 );
@@ -103,17 +112,17 @@ annotate service.LeaveRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : requester_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             }
-        ],
+        ]
     };
 
     currentApprover @Common.ValueList : {
@@ -123,17 +132,17 @@ annotate service.LeaveRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : currentApprover_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             }
-        ],
+        ]
     }
 };
 
@@ -143,3 +152,8 @@ annotate service.LeaveRequests with {
     status          @Common.FieldControl : #ReadOnly;
     workflowLevel   @Common.FieldControl : #ReadOnly;
 };
+
+annotate service.LeaveRequests with @(
+    Capabilities.UpdateRestrictions.Updatable : false,
+    Capabilities.DeleteRestrictions.Deletable : false
+);

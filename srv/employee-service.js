@@ -209,10 +209,20 @@ export default cds.service.impl(async function () {
     const loggedInEmployee = await getLoggedInEmployee(req);
     if (!loggedInEmployee) return null;
 
-    const requestRecord = await SELECT.one
-      .from(entity)
-      .columns('ID', 'status', 'currentApprover_ID', 'workflowLevel', 'requester_ID')
-      .where({ ID: requestId });
+    let requestRecord = null;
+
+    if (entity === LeaveRequests) {
+      const leaveRequests = await fetchLeaveRequestsFromS4();
+      requestRecord = leaveRequests.find(r => r.ID === requestId) || null;
+    } else if (entity === PromotionRequests) {
+      const promotionRequests = await fetchPromotionRequestsFromS4();
+      requestRecord = promotionRequests.find(r => r.ID === requestId) || null;
+    } else {
+      requestRecord = await SELECT.one
+        .from(entity)
+        .columns('ID', 'status', 'currentApprover_ID', 'workflowLevel', 'requester_ID')
+        .where({ ID: requestId });
+    }
 
     if (!requestRecord) {
       req.error(404, `${requestLabel} not found`);
@@ -523,13 +533,17 @@ export default cds.service.impl(async function () {
   };
 
   const fetchLeaveRequestsFromS4 = async () => {
-    const result = await callS4({
-      path: '/sap/opu/odata/sap/YY1_LEAVEREQUEST_CDS/YY1_LEAVEREQUEST?$format=json'
-    });
+    const [result, employees] = await Promise.all([
+      callS4({
+        path: '/sap/opu/odata/sap/YY1_LEAVEREQUEST_CDS/YY1_LEAVEREQUEST?$format=json'
+      }),
+      fetchEmployeesFromS4()
+    ]);
 
     const rows = result?.d?.results || [];
+    const employeeMap = new Map(employees.map(e => [e.ID, e]));
 
-    return rows.map(row => ({
+    const leaveRequests = rows.map(row => ({
       ID: row.LeaveRequestID,
       requester_ID: row.RequesterID,
       startDate: parseS4Date(row.StartDate),
@@ -545,16 +559,30 @@ export default cds.service.impl(async function () {
       HasActiveEntity: false,
       HasDraftEntity: false
     }));
+
+    for (const req of leaveRequests) {
+      req.requester = req.requester_ID ? employeeMap.get(req.requester_ID) || null : null;
+      req.currentApprover = req.currentApprover_ID ? employeeMap.get(req.currentApprover_ID) || null : null;
+    }
+
+    return leaveRequests;
   };
 
   const fetchPromotionRequestsFromS4 = async () => {
-    const result = await callS4({
-      path: '/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS/YY1_PROMOTIONREQUEST?$format=json'
-    });
+    const [result, employees, jobTitles] = await Promise.all([
+      callS4({
+        path: '/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS/YY1_PROMOTIONREQUEST?$format=json'
+      }),
+      fetchEmployeesFromS4(),
+      fetchJobTitlesFromS4()
+    ]);
 
     const rows = result?.d?.results || [];
 
-    return rows.map(row => ({
+    const employeeMap = new Map(employees.map(e => [e.ID, e]));
+    const jobTitleMap = new Map(jobTitles.map(j => [j.ID, j]));
+
+    const promotionRequests = rows.map(row => ({
       ID: row.PromotionRequestID,
       requester_ID: row.RequesterID,
       employeeConcerned_ID: row.EmployeeConcernedID,
@@ -573,6 +601,16 @@ export default cds.service.impl(async function () {
       HasActiveEntity: false,
       HasDraftEntity: false
     }));
+
+    for (const req of promotionRequests) {
+      req.requester = req.requester_ID ? employeeMap.get(req.requester_ID) || null : null;
+      req.employeeConcerned = req.employeeConcerned_ID ? employeeMap.get(req.employeeConcerned_ID) || null : null;
+      req.currentJobTitle = req.currentJobTitle_ID ? jobTitleMap.get(req.currentJobTitle_ID) || null : null;
+      req.requestedJobTitle = req.requestedJobTitle_ID ? jobTitleMap.get(req.requestedJobTitle_ID) || null : null;
+      req.currentApprover = req.currentApprover_ID ? employeeMap.get(req.currentApprover_ID) || null : null;
+    }
+
+    return promotionRequests;
   };
 
   const createS4 = async ({ servicePath, entitySet, data }) => {
@@ -703,6 +741,228 @@ export default cds.service.impl(async function () {
     });
   };
 
+  const deleteS4LeaveRequestById = async (leaveRequestId) => {
+    const result = await callS4({
+      path: '/sap/opu/odata/sap/YY1_LEAVEREQUEST_CDS/YY1_LEAVEREQUEST?$format=json'
+    });
+
+    const rows = result?.d?.results || [];
+    const target = rows.find(row => row.LeaveRequestID === leaveRequestId);
+
+    if (!target?.SAP_UUID) {
+      throw new Error(`S4 Leave Request not found for LeaveRequestID ${leaveRequestId}`);
+    }
+
+    const entityPath = `YY1_LEAVEREQUEST(guid'${target.SAP_UUID}')`;
+
+    const baseUrl = process.env.S4_BASE_URL;
+    const username = process.env.S4_USERNAME;
+    const password = process.env.S4_PASSWORD;
+
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+
+    const tokenResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_LEAVEREQUEST_CDS`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': 'Fetch'
+      }
+    });
+
+    const csrfToken = tokenResponse.headers.get('x-csrf-token');
+    const rawCookies = tokenResponse.headers.raw()['set-cookie'] || [];
+    const cookieHeader = rawCookies.map(cookie => cookie.split(';')[0]).join('; ');
+
+    if (!tokenResponse.ok || !csrfToken) {
+      const tokenErrorText = await tokenResponse.text();
+      throw new Error(`Failed to fetch CSRF token for leave delete: ${tokenResponse.status} ${tokenResponse.statusText} - ${tokenErrorText}`);
+    }
+
+    const deleteResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_LEAVEREQUEST_CDS/${entityPath}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': csrfToken,
+        Cookie: cookieHeader,
+        'If-Match': '*'
+      }
+    });
+
+    const text = await deleteResponse.text();
+
+    if (!deleteResponse.ok) {
+      throw new Error(`S4 leave delete failed: ${deleteResponse.status} ${deleteResponse.statusText} - ${text}`);
+    }
+
+    return true;
+  };
+
+  const updateS4EmployeeById = async (employeeId, updates) => {
+    const result = await callS4({
+      path: '/sap/opu/odata/sap/YY1_EMPLOYEE_CDS/YY1_EMPLOYEE?$format=json'
+    });
+
+    const rows = result?.d?.results || [];
+    const target = rows.find(row => row.EmployeeID === employeeId);
+
+    if (!target?.SAP_UUID) {
+      throw new Error(`S4 Employee not found for EmployeeID ${employeeId}`);
+    }
+
+    const entityPath = `YY1_EMPLOYEE(guid'${target.SAP_UUID}')`;
+
+    console.log('S4 Employee PATCH entityPath:', entityPath);
+    console.log('S4 Employee PATCH updates:', updates);
+    return await updateS4({
+      servicePath: '/sap/opu/odata/sap/YY1_EMPLOYEE_CDS',
+      entityPath,
+      data: updates,
+      method: 'PATCH'
+    });
+  };
+
+  const deleteS4EmployeeById = async (employeeId) => {
+    const result = await callS4({
+      path: '/sap/opu/odata/sap/YY1_EMPLOYEE_CDS/YY1_EMPLOYEE?$format=json'
+    });
+
+    const rows = result?.d?.results || [];
+    const target = rows.find(row => row.EmployeeID === employeeId);
+
+    if (!target?.SAP_UUID) {
+      throw new Error(`S4 Employee not found for EmployeeID ${employeeId}`);
+    }
+
+    const entityPath = `YY1_EMPLOYEE(guid'${target.SAP_UUID}')`;
+
+    const baseUrl = process.env.S4_BASE_URL;
+    const username = process.env.S4_USERNAME;
+    const password = process.env.S4_PASSWORD;
+
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+
+    const tokenResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_EMPLOYEE_CDS`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': 'Fetch'
+      }
+    });
+
+    const csrfToken = tokenResponse.headers.get('x-csrf-token');
+    const rawCookies = tokenResponse.headers.raw()['set-cookie'] || [];
+    const cookieHeader = rawCookies.map(cookie => cookie.split(';')[0]).join('; ');
+
+    if (!tokenResponse.ok || !csrfToken) {
+      const tokenErrorText = await tokenResponse.text();
+      throw new Error(`Failed to fetch CSRF token for delete: ${tokenResponse.status} ${tokenResponse.statusText} - ${tokenErrorText}`);
+    }
+
+    const deleteResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_EMPLOYEE_CDS/${entityPath}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': csrfToken,
+        Cookie: cookieHeader,
+        'If-Match': '*'
+      }
+    });
+
+    const text = await deleteResponse.text();
+
+    if (!deleteResponse.ok) {
+      throw new Error(`S4 delete failed: ${deleteResponse.status} ${deleteResponse.statusText} - ${text}`);
+    }
+
+    return true;
+  };
+
+  const updateS4PromotionRequestById = async (promotionRequestId, updates) => {
+    const result = await callS4({
+      path: '/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS/YY1_PROMOTIONREQUEST?$format=json'
+    });
+
+    const rows = result?.d?.results || [];
+    const target = rows.find(row => row.PromotionRequestID === promotionRequestId);
+
+    if (!target?.SAP_UUID) {
+      throw new Error(`S4 Promotion Request not found for PromotionRequestID ${promotionRequestId}`);
+    }
+
+    const entityPath = `YY1_PROMOTIONREQUEST(guid'${target.SAP_UUID}')`;
+
+    console.log('S4 Promotion PATCH entityPath:', entityPath);
+    console.log('S4 Promotion PATCH updates:', updates);
+    return await updateS4({
+      servicePath: '/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS',
+      entityPath,
+      data: updates,
+      method: 'PATCH'
+    });
+  };
+
+  const deleteS4PromotionRequestById = async (promotionRequestId) => {
+    const result = await callS4({
+      path: '/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS/YY1_PROMOTIONREQUEST?$format=json'
+    });
+
+    const rows = result?.d?.results || [];
+    const target = rows.find(row => row.PromotionRequestID === promotionRequestId);
+
+    if (!target?.SAP_UUID) {
+      throw new Error(`S4 Promotion Request not found for PromotionRequestID ${promotionRequestId}`);
+    }
+
+    const entityPath = `YY1_PROMOTIONREQUEST(guid'${target.SAP_UUID}')`;
+
+    const baseUrl = process.env.S4_BASE_URL;
+    const username = process.env.S4_USERNAME;
+    const password = process.env.S4_PASSWORD;
+
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+
+    const tokenResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': 'Fetch'
+      }
+    });
+
+    const csrfToken = tokenResponse.headers.get('x-csrf-token');
+    const rawCookies = tokenResponse.headers.raw()['set-cookie'] || [];
+    const cookieHeader = rawCookies.map(cookie => cookie.split(';')[0]).join('; ');
+
+    if (!tokenResponse.ok || !csrfToken) {
+      const tokenErrorText = await tokenResponse.text();
+      throw new Error(`Failed to fetch CSRF token for promotion delete: ${tokenResponse.status} ${tokenResponse.statusText} - ${tokenErrorText}`);
+    }
+
+    const deleteResponse = await fetch(`${baseUrl}/sap/opu/odata/sap/YY1_PROMOTIONREQUEST_CDS/${entityPath}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'x-csrf-token': csrfToken,
+        Cookie: cookieHeader,
+        'If-Match': '*'
+      }
+    });
+
+    const text = await deleteResponse.text();
+
+    if (!deleteResponse.ok) {
+      throw new Error(`S4 promotion delete failed: ${deleteResponse.status} ${deleteResponse.statusText} - ${text}`);
+    }
+
+    return true;
+  };
+
   const createS4PromotionFeedback = async ({
     promotionRequest_ID,
     author_ID,
@@ -735,16 +995,64 @@ export default cds.service.impl(async function () {
     return await fetchJobTitlesFromS4();
   });
 
-  this.on('READ', Employees, async () => {
-    return await fetchEmployeesFromS4();
+  this.on('READ', Employees, async (req) => {
+    const employees = await fetchEmployeesFromS4();
+
+    const where = req.query?.SELECT?.from?.ref?.[0]?.where;
+    if (!where) return employees;
+
+    const idIndex = where.findIndex(
+      x => x && x.ref && x.ref[0] === 'ID'
+    );
+
+    if (idIndex >= 0) {
+      const idValue = where[idIndex + 2]?.val;
+      if (idValue) {
+        return employees.filter(e => e.ID === idValue);
+      }
+    }
+
+    return employees;
   });
 
-  this.on('READ', LeaveRequests, async () => {
-    return await fetchLeaveRequestsFromS4();
+  this.on('READ', LeaveRequests, async (req) => {
+    const leaveRequests = await fetchLeaveRequestsFromS4();
+
+    const where = req.query?.SELECT?.from?.ref?.[0]?.where;
+    if (!where) return leaveRequests;
+
+    const idIndex = where.findIndex(
+      x => x && x.ref && x.ref[0] === 'ID'
+    );
+
+    if (idIndex >= 0) {
+      const idValue = where[idIndex + 2]?.val;
+      if (idValue) {
+        return leaveRequests.filter(r => r.ID === idValue);
+      }
+    }
+
+    return leaveRequests;
   });
 
-  this.on('READ', PromotionRequests, async () => {
-    return await fetchPromotionRequestsFromS4();
+  this.on('READ', PromotionRequests, async (req) => {
+    const promotionRequests = await fetchPromotionRequestsFromS4();
+
+    const where = req.query?.SELECT?.from?.ref?.[0]?.where;
+    if (!where) return promotionRequests;
+
+    const idIndex = where.findIndex(
+      x => x && x.ref && x.ref[0] === 'ID'
+    );
+
+    if (idIndex >= 0) {
+      const idValue = where[idIndex + 2]?.val;
+      if (idValue) {
+        return promotionRequests.filter(r => r.ID === idValue);
+      }
+    }
+
+    return promotionRequests;
   });
 
   this.after('READ', Employees, async (result) => {
@@ -825,6 +1133,88 @@ export default cds.service.impl(async function () {
     if (!allowed) return;
   });
 
+  this.on('CREATE', Employees, async (req) => {
+    const data = req.data;
+
+    const payload = {
+      EmployeeID: data.ID,
+      FirstName: data.firstName || "",
+      LastName: data.lastName || "",
+      FullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+      Email: data.email || "",
+      Phone: data.phone || "",
+      HireDate: toODataV2Date(data.hireDate),
+      Salary_V: data.salary != null ? Number(data.salary).toFixed(3) : "0.000",
+      Salary_C: "TND",
+      Country: data.country || "",
+      DepartmentID: data.department_ID || "",
+      RoleID: data.role_ID || "",
+      JobTitleID: data.jobTitle_ID || "",
+      ManagerID: data.manager_ID || "",
+      IsActive: data.isActive !== false
+    };
+
+    await createS4({
+      servicePath: '/sap/opu/odata/sap/YY1_EMPLOYEE_CDS',
+      entitySet: 'YY1_EMPLOYEE',
+      data: payload
+    });
+
+    return {
+      ...data,
+      fullName: payload.FullName
+    };
+  });
+
+  this.on('UPDATE', Employees, async (req) => {
+    const data = req.data;
+    const employeeId = data.ID || req.params?.[0]?.ID;
+
+    if (!employeeId) {
+      req.error(400, 'Missing Employee ID for update');
+      return;
+    }
+
+    const updates = {};
+
+    if (data.firstName !== undefined) updates.FirstName = data.firstName;
+    if (data.lastName !== undefined) updates.LastName = data.lastName;
+    if (data.firstName !== undefined || data.lastName !== undefined) {
+      updates.FullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+    }
+    if (data.email !== undefined) updates.Email = data.email;
+    if (data.phone !== undefined) updates.Phone = data.phone;
+    if (data.hireDate !== undefined) updates.HireDate = toODataV2Date(data.hireDate);
+    if (data.salary !== undefined) updates.Salary_V = Number(data.salary).toFixed(3);
+    updates.Salary_C = "TND";
+    if (data.country !== undefined) updates.Country = data.country;
+    if (data.department_ID !== undefined) updates.DepartmentID = data.department_ID;
+    if (data.role_ID !== undefined) updates.RoleID = data.role_ID;
+    if (data.jobTitle_ID !== undefined) updates.JobTitleID = data.jobTitle_ID;
+    if (data.manager_ID !== undefined) updates.ManagerID = data.manager_ID || "";
+    if (data.isActive !== undefined) updates.IsActive = data.isActive;
+
+    await updateS4EmployeeById(employeeId, updates);
+
+    return {
+      ...data,
+      ID: employeeId,
+      fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim()
+    };
+  });
+
+  this.on('DELETE', Employees, async (req) => {
+    const employeeId = req.data?.ID || req.params?.[0]?.ID;
+
+    if (!employeeId) {
+      req.error(400, 'Missing Employee ID for delete');
+      return;
+    }
+
+    await deleteS4EmployeeById(employeeId);
+    return true;
+  });
+  
   this.before('CREATE', LeaveRequests, async (req) => {
     const data = req.data;
 
@@ -835,7 +1225,7 @@ export default cds.service.impl(async function () {
     }
 
     if (!data.ID) {
-      data.ID = await generateShortId(LeaveRequests, 'LR', 10);
+      data.ID = `LR${Date.now().toString().slice(-8)}`;
     }
 
     data.status = 'SUBMITTED';
@@ -844,10 +1234,7 @@ export default cds.service.impl(async function () {
     data.workflowLevel = 1;
 
     if (data.requester_ID) {
-      const requester = await SELECT.one
-        .from(Employees)
-        .columns('ID', 'role_ID', 'manager_ID')
-        .where({ ID: data.requester_ID });
+      const requester = await getEmployeeById(data.requester_ID);
 
       if (!requester) {
         req.error(400, 'Leave requester not found');
@@ -883,6 +1270,104 @@ export default cds.service.impl(async function () {
 
       data.currentApprover_ID = approver.ID;
     }
+  });
+
+  this.before('UPDATE', LeaveRequests, async (req) => {
+    const loggedInEmployee = await getLoggedInEmployee(req);
+    if (!loggedInEmployee) return;
+
+    const leaveRequestId = req.data?.ID || req.params?.[0]?.ID;
+    if (!leaveRequestId) {
+      req.error(400, 'Missing Leave Request ID for update');
+      return;
+    }
+
+    const leaveRequests = await fetchLeaveRequestsFromS4();
+    const leaveRequest = leaveRequests.find(r => r.ID === leaveRequestId);
+
+    if (!leaveRequest) {
+      req.error(404, 'Leave request not found');
+      return;
+    }
+
+    const isRequester = leaveRequest.requester_ID === loggedInEmployee.ID;
+    const isHRAdmin = [ROLE.RH, ROLE.DRH].includes(loggedInEmployee.role_ID);
+
+    if (!isRequester && !isHRAdmin) {
+      req.error(403, 'Only the requester, RH, or DRH can update this leave request');
+      return;
+    }
+  });
+
+  this.before('DELETE', LeaveRequests, async (req) => {
+    const loggedInEmployee = await getLoggedInEmployee(req);
+    if (!loggedInEmployee) return;
+
+    const leaveRequestId = req.data?.ID || req.params?.[0]?.ID;
+    if (!leaveRequestId) {
+      req.error(400, 'Missing Leave Request ID for delete');
+      return;
+    }
+
+    const leaveRequests = await fetchLeaveRequestsFromS4();
+    const leaveRequest = leaveRequests.find(r => r.ID === leaveRequestId);
+
+    if (!leaveRequest) {
+      req.error(404, 'Leave request not found');
+      return;
+    }
+
+    const isRequester = leaveRequest.requester_ID === loggedInEmployee.ID;
+    const isHRAdmin = [ROLE.RH, ROLE.DRH].includes(loggedInEmployee.role_ID);
+
+    if (!isRequester && !isHRAdmin) {
+      req.error(403, 'Only the requester, RH, or DRH can delete this leave request');
+      return;
+    }
+  });
+
+  this.on('UPDATE', LeaveRequests, async (req) => {
+    const data = req.data;
+    const leaveRequestId = data.ID || req.params?.[0]?.ID;
+
+    if (!leaveRequestId) {
+      req.error(400, 'Missing Leave Request ID for update');
+      return;
+    }
+
+    const updates = {};
+
+    if (data.requester_ID !== undefined) updates.RequesterID = data.requester_ID;
+    if (data.startDate !== undefined) updates.StartDate = toODataV2Date(data.startDate);
+    if (data.endDate !== undefined) updates.EndDate = toODataV2Date(data.endDate);
+    if (data.reason !== undefined) updates.Reason = data.reason;
+    if (data.status !== undefined) updates.Status = data.status;
+    if (data.statusCriticality !== undefined) updates.StatusCriticality = Number(data.statusCriticality).toFixed(2);
+    if (data.workflowLevel !== undefined) updates.WorkflowLevel = Number(data.workflowLevel).toFixed(2);
+    if (data.currentApprover_ID !== undefined) updates.CurrentApproverID = data.currentApprover_ID || '';
+    if (data.submittedAt !== undefined) updates.SubmittedAt = toODataV2DateTime(data.submittedAt);
+    if (data.finalDecisionAt !== undefined) {
+      updates.FinalDecisionAt = data.finalDecisionAt ? toODataV2DateTime(data.finalDecisionAt) : null;
+    }
+
+    await updateS4LeaveRequestStatus(leaveRequestId, updates);
+
+    return {
+      ...data,
+      ID: leaveRequestId
+    };
+  });
+
+  this.on('DELETE', LeaveRequests, async (req) => {
+    const leaveRequestId = req.data?.ID || req.params?.[0]?.ID;
+
+    if (!leaveRequestId) {
+      req.error(400, 'Missing Leave Request ID for delete');
+      return;
+    }
+
+    await deleteS4LeaveRequestById(leaveRequestId);
+    return true;
   });
 
   this.on('CREATE', LeaveRequests, async (req, next) => {
@@ -931,9 +1416,14 @@ export default cds.service.impl(async function () {
 
   this.before('CREATE', PromotionRequests, async (req) => {
     const data = req.data;
-
+    if (!data.requester_ID) {
+      const loggedInEmployee = await getLoggedInEmployee(req);
+      if (!loggedInEmployee) return;
+      data.requester_ID = loggedInEmployee.ID;
+    }
+    
     if (!data.ID) {
-      data.ID = await generateShortId(PromotionRequests, 'PR', 10);
+     data.ID = `PR${Date.now().toString().slice(-8)}`;
     }
 
     data.status = 'SUBMITTED';
@@ -954,15 +1444,65 @@ export default cds.service.impl(async function () {
     }
 
     if (data.employeeConcerned_ID) {
-      const employee = await SELECT.one
-        .from(Employees)
-        .columns('jobTitle_ID', 'salary')
-        .where({ ID: data.employeeConcerned_ID });
+      const employee = await getEmployeeById(data.employeeConcerned_ID);
 
       if (employee) {
         data.currentJobTitle_ID = employee.jobTitle_ID;
         data.currentSalary = employee.salary;
       }
+    }
+  });
+
+  this.before('UPDATE', PromotionRequests, async (req) => {
+    const loggedInEmployee = await getLoggedInEmployee(req);
+    if (!loggedInEmployee) return;
+
+    const promotionRequestId = req.data?.ID || req.params?.[0]?.ID;
+    if (!promotionRequestId) {
+      req.error(400, 'Missing Promotion Request ID for update');
+      return;
+    }
+
+    const promotionRequests = await fetchPromotionRequestsFromS4();
+    const promotionRequest = promotionRequests.find(r => r.ID === promotionRequestId);
+
+    if (!promotionRequest) {
+      req.error(404, 'Promotion request not found');
+      return;
+    }
+
+    const isRequester = promotionRequest.requester_ID === loggedInEmployee.ID;
+    const isHRAdmin = [ROLE.RH, ROLE.DRH].includes(loggedInEmployee.role_ID);
+
+    if (!isRequester && !isHRAdmin) {
+      req.error(403, 'Only the requester, RH, or DRH can update this promotion request');
+      return;
+    }
+  });
+  this.before('DELETE', PromotionRequests, async (req) => {
+    const loggedInEmployee = await getLoggedInEmployee(req);
+    if (!loggedInEmployee) return;
+
+    const promotionRequestId = req.data?.ID || req.params?.[0]?.ID;
+    if (!promotionRequestId) {
+      req.error(400, 'Missing Promotion Request ID for delete');
+      return;
+    }
+
+    const promotionRequests = await fetchPromotionRequestsFromS4();
+    const promotionRequest = promotionRequests.find(r => r.ID === promotionRequestId);
+
+    if (!promotionRequest) {
+      req.error(404, 'Promotion request not found');
+      return;
+    }
+
+    const isRequester = promotionRequest.requester_ID === loggedInEmployee.ID;
+    const isHRAdmin = [ROLE.RH, ROLE.DRH].includes(loggedInEmployee.role_ID);
+
+    if (!isRequester && !isHRAdmin) {
+      req.error(403, 'Only the requester, RH, or DRH can delete this promotion request');
+      return;
     }
   });
 
@@ -996,6 +1536,55 @@ export default cds.service.impl(async function () {
 
     const result = await next();
     return result;
+  });
+
+  this.on('UPDATE', PromotionRequests, async (req) => {
+    const data = req.data;
+    const promotionRequestId = data.ID || req.params?.[0]?.ID;
+
+    if (!promotionRequestId) {
+      req.error(400, 'Missing Promotion Request ID for update');
+      return;
+    }
+
+    const updates = {};
+
+    if (data.requester_ID !== undefined) updates.RequesterID = data.requester_ID;
+    if (data.employeeConcerned_ID !== undefined) updates.EmployeeConcernedID = data.employeeConcerned_ID;
+    if (data.currentJobTitle_ID !== undefined) updates.CurrentJobTitleID = data.currentJobTitle_ID || '';
+    if (data.requestedJobTitle_ID !== undefined) updates.RequestedJobTitleID = data.requestedJobTitle_ID || '';
+    if (data.currentSalary !== undefined) updates.CurrentSalary_V = Number(data.currentSalary).toFixed(3);
+    updates.CurrentSalary_C = 'TND';
+    if (data.requestedSalary !== undefined) updates.RequestedSalary_V = Number(data.requestedSalary).toFixed(3);
+    updates.RequestedSalary_C = 'TND';
+    if (data.justification !== undefined) updates.Justification = data.justification;
+    if (data.status !== undefined) updates.Status = data.status;
+    if (data.statusCriticality !== undefined) updates.StatusCriticality = Number(data.statusCriticality).toFixed(2);
+    if (data.workflowLevel !== undefined) updates.WorkflowLevel = Number(data.workflowLevel).toFixed(2);
+    if (data.currentApprover_ID !== undefined) updates.CurrentApproverID = data.currentApprover_ID || '';
+    if (data.submittedAt !== undefined) updates.SubmittedAt = new Date(data.submittedAt).toISOString();
+    if (data.finalDecisionAt !== undefined) {
+      updates.FinalDecisionAt = data.finalDecisionAt ? new Date(data.finalDecisionAt).toISOString() : null;
+    }
+
+    await updateS4PromotionRequestById(promotionRequestId, updates);
+
+    return {
+      ...data,
+      ID: promotionRequestId
+    };
+  });
+
+  this.on('DELETE', PromotionRequests, async (req) => {
+    const promotionRequestId = req.data?.ID || req.params?.[0]?.ID;
+
+    if (!promotionRequestId) {
+      req.error(400, 'Missing Promotion Request ID for delete');
+      return;
+    }
+
+    await deleteS4PromotionRequestById(promotionRequestId);
+    return true;
   });
 
   this.after(['CREATE', 'UPDATE'], PromotionRequests, async (data) => {
@@ -1178,14 +1767,47 @@ export default cds.service.impl(async function () {
     }
 
     if (nextStep.final) {
+      const finalDecisionAt = new Date().toISOString();
+      console.log('FINAL PROMOTION APPROVAL for:', promotionRequestId);
+
       await UPDATE(PromotionRequests)
         .set({
           status: 'APPROVED',
           statusCriticality: 3,
-          finalDecisionAt: new Date().toISOString(),
+          finalDecisionAt,
           currentApprover_ID: null
         })
         .where({ ID: promotionRequestId });
+
+      console.log('Updating S4 Promotion Request status...');
+      await updateS4PromotionRequestById(promotionRequestId, {
+        Status: 'APPROVED',
+        StatusCriticality: '3.00',
+        FinalDecisionAt: finalDecisionAt,
+        CurrentApproverID: ''
+      });
+
+      const fullPromotionRequest = await SELECT.one
+        .from(PromotionRequests)
+        .columns(
+          'employeeConcerned_ID',
+          'requestedJobTitle_ID',
+          'requestedSalary'
+        )
+        .where({ ID: promotionRequestId });
+
+      console.log('Promotion request local data for employee update:', fullPromotionRequest);
+
+      if (fullPromotionRequest?.employeeConcerned_ID) {
+        console.log('Updating promoted employee in S4...');
+        await updateS4EmployeeById(fullPromotionRequest.employeeConcerned_ID, {
+          JobTitleID: fullPromotionRequest.requestedJobTitle_ID || '',
+          Salary_V: fullPromotionRequest.requestedSalary != null
+            ? Number(fullPromotionRequest.requestedSalary).toFixed(3)
+            : '0.000',
+          Salary_C: 'TND'
+        });
+      }
 
       if (requestRecord?.requester_ID) {
         await createNotification({
@@ -1254,14 +1876,23 @@ export default cds.service.impl(async function () {
       recommendation: 'REJECTED'
     });
 
+    const finalDecisionAt = new Date().toISOString();
+
     await UPDATE(PromotionRequests)
       .set({
         status: 'REJECTED',
         statusCriticality: 1,
-        finalDecisionAt: new Date().toISOString(),
+        finalDecisionAt,
         currentApprover_ID: null
       })
       .where({ ID: promotionRequestId });
+
+    await updateS4PromotionRequestById(promotionRequestId, {
+      Status: 'REJECTED',
+      StatusCriticality: '1.00',
+      FinalDecisionAt: finalDecisionAt,
+      CurrentApproverID: ''
+    });
 
     if (requestRecord?.requester_ID) {
       await createNotification({

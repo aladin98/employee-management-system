@@ -18,49 +18,60 @@ annotate service.PromotionRequests with {
 };
 
 annotate service.PromotionRequests with @(
+    UI.HeaderInfo : {
+        TypeName : '{@i18n>PromotionRequest}',
+        TypeNamePlural : '{@i18n>PromotionRequests}',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : ID
+        }
+    },
+
     UI.SelectionFields : [
         ID,
         status,
         employeeConcerned_ID
     ],
+
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requester}',
-            Value : requester_ID,
+            Value : requester.fullName
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>employeeConcerned}',
-            Value : employeeConcerned_ID,
+            Value : employeeConcerned.fullName
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>currentJobTitle}',
-            Value : currentJobTitle_ID,
+            Value : currentJobTitle.title
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requestedJobTitle}',
-            Value : requestedJobTitle_ID,
+            Value : requestedJobTitle.title
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>currentSalary}',
-            Value : currentSalary,
+            Value : currentSalary
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requestedSalary}',
-            Value : requestedSalary,
+            Value : requestedSalary
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>status}',
             Value : status,
-            Criticality : statusCriticality,
+            Criticality : statusCriticality
         }
     ],
+
     UI.Identification : [
         {
             $Type : 'UI.DataFieldForAction',
@@ -75,83 +86,86 @@ annotate service.PromotionRequests with @(
             ![@Core.OperationAvailable] : canReject
         }
     ],
+
     UI.FieldGroup #CreateRequest : {
         $Type : 'UI.FieldGroupType',
         Data : [
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>employeeConcerned}',
-                Value : employeeConcerned_ID,
+                Value : employeeConcerned.fullName
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requestedJobTitle}',
-                Value : requestedJobTitle_ID,
+                Value : requestedJobTitle.title
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requestedSalary}',
-                Value : requestedSalary,
+                Value : requestedSalary
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>justification}',
-                Value : justification,
+                Value : justification
             }
-        ],
+        ]
     },
+
     UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requester}',
-                Value : requester_ID,
+                Value : requester.fullName
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>employeeConcerned}',
-                Value : employeeConcerned_ID,
+                Value : employeeConcerned.fullName
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>currentJobTitle}',
-                Value : currentJobTitle_ID,
+                Value : currentJobTitle.title
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requestedJobTitle}',
-                Value : requestedJobTitle_ID,
+                Value : requestedJobTitle.title
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>currentSalary}',
-                Value : currentSalary,
+                Value : currentSalary
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requestedSalary}',
-                Value : requestedSalary,
+                Value : requestedSalary
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>justification}',
-                Value : justification,
+                Value : justification
             }
-        ],
+        ]
     },
+
     UI.Facets : [
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
             Label : '{@i18n>generalInformation}',
-            Target : '@UI.FieldGroup#GeneralInformation',
+            Target : '@UI.FieldGroup#GeneralInformation'
         },
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'FeedbacksFacet',
             Label : '{@i18n>feedbacks}',
-            Target : 'feedbacks/@UI.LineItem',
+            Target : 'feedbacks/@UI.LineItem'
         }
     ]
 );
@@ -164,17 +178,17 @@ annotate service.PromotionRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : requester_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             }
-        ],
+        ]
     };
 
     employeeConcerned @Common.ValueList : {
@@ -184,17 +198,17 @@ annotate service.PromotionRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : employeeConcerned_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             }
-        ],
+        ]
     };
 
     currentJobTitle @Common.ValueList : {
@@ -204,13 +218,13 @@ annotate service.PromotionRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : currentJobTitle_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'title',
+                ValueListProperty : 'title'
             }
-        ],
+        ]
     };
 
     requestedJobTitle @Common.ValueList : {
@@ -220,13 +234,13 @@ annotate service.PromotionRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : requestedJobTitle_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'title',
+                ValueListProperty : 'title'
             }
-        ],
+        ]
     };
 
     currentApprover @Common.ValueList : {
@@ -236,17 +250,17 @@ annotate service.PromotionRequests with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : currentApprover_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             }
-        ],
+        ]
     }
 };
 
@@ -262,3 +276,8 @@ annotate service.PromotionRequests with @Common.SideEffects #EmployeeConcernedCh
     SourceProperties : [ employeeConcerned_ID ],
     TargetProperties : [ currentJobTitle_ID, currentSalary ]
 };
+
+annotate service.PromotionRequests with @(
+    Capabilities.UpdateRestrictions.Updatable : false,
+    Capabilities.DeleteRestrictions.Deletable : false
+);

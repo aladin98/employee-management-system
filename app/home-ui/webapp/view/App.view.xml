@@ -10,7 +10,55 @@
     <pages>
       <Page showHeader="false">
         <content>
-          <VBox fitContainer="true">
+
+          <VBox
+            fitContainer="true"
+            justifyContent="Center"
+            alignItems="Center"
+            visible="{= !${home>/isLoggedIn} }"
+            class="sapUiResponsiveContentPadding">
+
+            <VBox
+              width="28rem"
+              class="sapUiMediumMargin"
+              renderType="Bare">
+
+              <VBox class="sapUiMediumMarginBottom" alignItems="Center">
+                <Title text="{home>/texts/appTitle}" level="H1" textAlign="Center" />
+                <Text
+                  text="{home>/texts/loginSubtitle}"
+                  textAlign="Center"
+                  wrapping="true"
+                  class="sapUiSmallMarginTop" />
+              </VBox>
+
+              <Panel class="sapUiResponsiveMargin" backgroundDesign="Translucent">
+                <VBox class="sapUiLargeMargin">
+                  <Label text="{home>/texts/selectUser}" class="sapUiSmallMarginBottom" />
+                  <Select
+                    id="demoUserSelect"
+                    width="100%"
+                    selectedKey="{home>/selectedDemoUser}"
+                    forceSelection="false"
+                    items="{home>/demoUsers}">
+                    <core:Item key="" text="{home>/texts/selectUser}" />
+                    <items>
+                    <core:Item key="{home>email}" text="{home>fullName}" />
+                    </items>
+                  </Select>
+
+                  <Button
+                    text="{home>/texts/login}"
+                    type="Emphasized"
+                    press=".onLoginPress"
+                    class="sapUiMediumMarginTop"
+                    width="100%" />
+                </VBox>
+              </Panel>
+            </VBox>
+          </VBox>
+
+          <VBox fitContainer="true" visible="{home>/isLoggedIn}">
 
             <Toolbar class="homeShellBar">
               <Title text="{home>/texts/appTitle}" level="H3" />
@@ -161,6 +209,7 @@
             </VBox>
 
           </VBox>
+
         </content>
       </Page>
     </pages>

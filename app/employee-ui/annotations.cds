@@ -37,33 +37,33 @@ annotate service.Employees with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'First Name',
-            Value : firstName,
+            Label : '{@i18n>firstName}',
+            Value : firstName
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Last Name',
-            Value : lastName,
+            Label : '{@i18n>lastName}',
+            Value : lastName
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Department',
-            Value : department_ID,
+            Label : '{@i18n>department}',
+            Value : department.name
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Role',
-            Value : role_ID,
+            Label : '{@i18n>role}',
+            Value : role.name
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Job Title',
-            Value : jobTitle_ID,
+            Label : '{@i18n>jobTitle}',
+            Value : jobTitle.title
         },
         {
             $Type : 'UI.DataField',
-            Label : 'Manager',
-            Value : manager_ID,
+            Label : '{@i18n>manager}',
+            Value : manager.fullName
         }
     ],
     UI.FieldGroup #GeneralInformation : {
@@ -71,63 +71,63 @@ annotate service.Employees with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Label : 'First Name',
-                Value : firstName,
+                Label : '{@i18n>firstName}',
+                Value : firstName
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Last Name',
-                Value : lastName,
+                Label : '{@i18n>lastName}',
+                Value : lastName
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Email',
-                Value : email,
+                Label : '{@i18n>email}',
+                Value : email
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Phone',
-                Value : phone,
+                Label : '{@i18n>phone}',
+                Value : phone
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Hire Date',
-                Value : hireDate,
+                Label : '{@i18n>hireDate}',
+                Value : hireDate
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Salary',
-                Value : salary,
+                Label : '{@i18n>salary}',
+                Value : salary
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Active',
-                Value : isActive,
+                Label : '{@i18n>active}',
+                Value : isActive
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Country',
-                Value : country,
+                Label : '{@i18n>country}',
+                Value : country
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Department',
-                Value : department_ID,
+                Label : '{@i18n>department}',
+                Value : department.name
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Role',
-                Value : role_ID,
+                Label : '{@i18n>role}',
+                Value : role.name
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Job Title',
-                Value : jobTitle_ID,
+                Label : '{@i18n>jobTitle}',
+                Value : jobTitle.title
             },
             {
                 $Type : 'UI.DataField',
-                Label : 'Manager',
-                Value : manager_ID,
+                Label : '{@i18n>manager}',
+                Value : manager.fullName
             }
         ]
     },
@@ -135,8 +135,8 @@ annotate service.Employees with @(
         {
             $Type : 'UI.ReferenceFacet',
             ID : 'GeneralInformationFacet',
-            Label : 'General Information',
-            Target : '@UI.FieldGroup#GeneralInformation',
+            Label : '{@i18n>generalInformation}',
+            Target : '@UI.FieldGroup#GeneralInformation'
         }
     ]
 );
@@ -149,17 +149,17 @@ annotate service.Employees with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : department_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'name',
+                ValueListProperty : 'name'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'location',
-            },
-        ],
+                ValueListProperty : 'location'
+            }
+        ]
     };
 
     role @Common.ValueList : {
@@ -169,17 +169,17 @@ annotate service.Employees with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : role_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'name',
+                ValueListProperty : 'name'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'description',
-            },
-        ],
+                ValueListProperty : 'description'
+            }
+        ]
     };
 
     jobTitle @Common.ValueList : {
@@ -189,17 +189,17 @@ annotate service.Employees with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : jobTitle_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'title',
+                ValueListProperty : 'title'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'description',
-            },
-        ],
+                ValueListProperty : 'description'
+            }
+        ]
     };
 
     manager @Common.ValueList : {
@@ -209,20 +209,25 @@ annotate service.Employees with {
             {
                 $Type : 'Common.ValueListParameterInOut',
                 LocalDataProperty : manager_ID,
-                ValueListProperty : 'ID',
+                ValueListProperty : 'ID'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'fullName',
+                ValueListProperty : 'fullName'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'email',
+                ValueListProperty : 'email'
             },
             {
                 $Type : 'Common.ValueListParameterDisplayOnly',
-                ValueListProperty : 'phone',
-            },
-        ],
-    }
+                ValueListProperty : 'phone'
+            }
+        ]
+    };
 };
+
+annotate service.Employees with @(
+    Capabilities.UpdateRestrictions.Updatable : false,
+    Capabilities.DeleteRestrictions.Deletable : false
+);

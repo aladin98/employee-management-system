@@ -53,7 +53,10 @@ sap.ui.define([
         openNotifications: "Ouvrir les notifications",
         statsLoadError: "Impossible de charger les statistiques du tableau de bord",
         profileLoadError: "Impossible de charger le profil utilisateur",
-        logoutMessage: "La déconnexion sera gérée plus tard via SAP Launchpad / Identity."
+        loginUsersLoadError: "Impossible de charger la liste des utilisateurs",
+        loginSubtitle: "Connectez-vous avec votre profil employé",
+        selectUser: "Sélectionner un utilisateur",
+        login: "Connexion"
       } : {
         appTitle: "Employee Management System",
         home: "Home",
@@ -95,15 +98,21 @@ sap.ui.define([
         openNotifications: "Open Notifications",
         statsLoadError: "Unable to load dashboard statistics",
         profileLoadError: "Unable to load user profile",
-        logoutMessage: "Logout will be handled later via SAP Launchpad / Identity."
+        loginUsersLoadError: "Unable to load login users",
+        loginSubtitle: "Sign in with your employee profile",
+        selectUser: "Select User",
+        login: "Sign In"
       };
 
       var oHomeModel = new JSONModel({
         texts: oTexts,
+        isLoggedIn: false,
         userName: "Demo User",
         role: "",
         department: "",
         selectedLanguage: sSelectedLanguage,
+        selectedDemoUser: "",
+        demoUsers: [],
         profile: {
           fullName: "",
           role: "",
@@ -124,8 +133,15 @@ sap.ui.define([
       });
 
       this.getView().setModel(oHomeModel, "home");
-      this._loadDashboardStats();
-      this._loadCurrentProfile();
+      this._loadDemoUsers();
+
+      var sDemoUser = window.localStorage.getItem("demoUser");
+      if (sDemoUser) {
+        oHomeModel.setProperty("/selectedDemoUser", sDemoUser);
+        oHomeModel.setProperty("/isLoggedIn", true);
+        this._loadDashboardStats();
+        this._loadCurrentProfile();
+      }
     },
 
     _calculateYearsHere: function (sHireDate) {
@@ -150,11 +166,46 @@ sap.ui.define([
       return iYears <= 1 ? iYears + " year" : iYears + " years";
     },
 
+    _loadDemoUsers: function () {
+      var oModel = this.getView().getModel("home");
+      var sUrl = window.location.origin + "/odata/v4/employee/Employees";
+
+      fetch(sUrl)
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("Failed to load employees");
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          var aUsers = (data.value || [])
+            .filter(function (emp) {
+              return emp.isActive && emp.email;
+            })
+            .map(function (emp) {
+              return {
+                ID: emp.ID,
+                fullName: emp.fullName,
+                email: emp.email
+              };
+            });
+
+          oModel.setProperty("/demoUsers", aUsers);
+        })
+        .catch(function () {
+          MessageToast.show(oModel.getProperty("/texts/loginUsersLoadError"));
+        });
+    },
+
     _loadDashboardStats: function () {
       var oModel = this.getView().getModel("home");
       var sUrl = window.location.origin + "/odata/v4/employee/getDashboardStats()";
 
-      fetch(sUrl)
+      fetch(sUrl, {
+        headers: {
+          "x-demo-user": window.localStorage.getItem("demoUser") || ""
+        }
+      })
         .then(function (response) {
           if (!response.ok) {
             throw new Error("Failed to load dashboard statistics");
@@ -177,7 +228,11 @@ sap.ui.define([
       var sUrl = window.location.origin + "/odata/v4/employee/getCurrentProfile()";
       var that = this;
 
-      fetch(sUrl)
+      fetch(sUrl, {
+        headers: {
+          "x-demo-user": window.localStorage.getItem("demoUser") || ""
+        }
+      })
         .then(function (response) {
           if (!response.ok) {
             throw new Error("Failed to load user profile");
@@ -202,6 +257,21 @@ sap.ui.define([
         .catch(function () {
           MessageToast.show(oModel.getProperty("/texts/profileLoadError"));
         });
+    },
+
+    onLoginPress: function () {
+      var oModel = this.getView().getModel("home");
+      var sUser = oModel.getProperty("/selectedDemoUser");
+
+      if (!sUser) {
+        MessageToast.show(oModel.getProperty("/texts/selectUserMessage"));
+        return;
+      }
+
+      window.localStorage.setItem("demoUser", sUser);
+      oModel.setProperty("/isLoggedIn", true);
+      this._loadDashboardStats();
+      this._loadCurrentProfile();
     },
 
     onOpenUserMenu: function (oEvent) {
@@ -235,28 +305,56 @@ sap.ui.define([
 
     onLogoutPress: function () {
       this.byId("userMenuPopover").close();
+      window.localStorage.removeItem("demoUser");
+
       var oModel = this.getView().getModel("home");
-      MessageToast.show(oModel.getProperty("/texts/logoutMessage"));
+      oModel.setProperty("/isLoggedIn", false);
+      oModel.setProperty("/userName", "Demo User");
+      oModel.setProperty("/role", "");
+      oModel.setProperty("/department", "");
+      oModel.setProperty("/profile", {
+        fullName: "",
+        role: "",
+        jobTitle: "",
+        department: "",
+        manager: "",
+        email: "",
+        phone: "",
+        hireDate: "",
+        yearsHere: ""
+      });
+      oModel.setProperty("/stats", {
+        employees: "0",
+        leave: "0",
+        promotions: "0",
+        notifications: "0"
+      });
+      oModel.setProperty("/selectedDemoUser", "");
+    },
+
+    _getDemoUserParam: function () {
+      var sUser = window.localStorage.getItem("demoUser") || "";
+      return sUser ? ("?demoUser=" + encodeURIComponent(sUser)) : "";
     },
 
     onOpenEmployees: function () {
-      window.location.href = "/my.company.hr.employeeui/index.html";
+      window.location.href = "/my.company.hr.employeeui/index.html" + this._getDemoUserParam();
     },
 
     onOpenLeaveRequests: function () {
-      window.location.href = "/my.company.hr.leaverequestsui/index.html";
+      window.location.href = "/my.company.hr.leaverequestsui/index.html" + this._getDemoUserParam();
     },
 
     onOpenPromotions: function () {
-      window.location.href = "/my.company.hr.promotionsui/index.html";
+      window.location.href = "/my.company.hr.promotionsui/index.html" + this._getDemoUserParam();
     },
 
     onOpenPromotionFeedbacks: function () {
-      window.location.href = "/my.company.hr.promotionfeedbacksui/index.html";
+      window.location.href = "/my.company.hr.promotionfeedbacksui/index.html" + this._getDemoUserParam();
     },
 
     onOpenNotifications: function () {
-      window.location.href = "/my.company.hr.notificationsui/index.html";
+      window.location.href = "/my.company.hr.notificationsui/index.html" + this._getDemoUserParam();
     }
   });
 });

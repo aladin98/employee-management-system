@@ -9,6 +9,16 @@ annotate service.PromotionFeedbacks with {
 };
 
 annotate service.PromotionFeedbacks with @(
+
+    UI.HeaderInfo : {
+        TypeName : '{@i18n>PromotionFeedback}',
+        TypeNamePlural : '{@i18n>PromotionFeedbacks}',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : ID
+        }
+    },
+    
     UI.SelectionFields : [
         ID,
         authorRole,
