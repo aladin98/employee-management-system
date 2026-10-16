@@ -37,22 +37,22 @@ annotate service.PromotionRequests with @(
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requester}',
-            Value : requester.fullName
+            Value : requester_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>employeeConcerned}',
-            Value : employeeConcerned.fullName
+            Value : employeeConcerned_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>currentJobTitle}',
-            Value : currentJobTitle.title
+            Value : currentJobTitle_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>requestedJobTitle}',
-            Value : requestedJobTitle.title
+            Value : requestedJobTitle_ID
         },
         {
             $Type : 'UI.DataField',
@@ -87,18 +87,18 @@ annotate service.PromotionRequests with @(
         }
     ],
 
-    UI.FieldGroup #CreateRequest : {
+    UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>employeeConcerned}',
-                Value : employeeConcerned.fullName
+                Value : employeeConcerned_ID
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>requestedJobTitle}',
-                Value : requestedJobTitle.title
+                Value : requestedJobTitle_ID
             },
             {
                 $Type : 'UI.DataField',
@@ -109,32 +109,11 @@ annotate service.PromotionRequests with @(
                 $Type : 'UI.DataField',
                 Label : '{@i18n>justification}',
                 Value : justification
-            }
-        ]
-    },
-
-    UI.FieldGroup #GeneralInformation : {
-        $Type : 'UI.FieldGroupType',
-        Data : [
-            {
-                $Type : 'UI.DataField',
-                Label : '{@i18n>requester}',
-                Value : requester.fullName
-            },
-            {
-                $Type : 'UI.DataField',
-                Label : '{@i18n>employeeConcerned}',
-                Value : employeeConcerned.fullName
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>currentJobTitle}',
-                Value : currentJobTitle.title
-            },
-            {
-                $Type : 'UI.DataField',
-                Label : '{@i18n>requestedJobTitle}',
-                Value : requestedJobTitle.title
+                Value : currentJobTitle_ID
             },
             {
                 $Type : 'UI.DataField',
@@ -143,13 +122,13 @@ annotate service.PromotionRequests with @(
             },
             {
                 $Type : 'UI.DataField',
-                Label : '{@i18n>requestedSalary}',
-                Value : requestedSalary
+                Label : '{@i18n>status}',
+                Value : status
             },
             {
                 $Type : 'UI.DataField',
-                Label : '{@i18n>justification}',
-                Value : justification
+                Label : '{@i18n>currentApprover}',
+                Value : currentApprover_ID
             }
         ]
     },
@@ -278,6 +257,8 @@ annotate service.PromotionRequests with @Common.SideEffects #EmployeeConcernedCh
 };
 
 annotate service.PromotionRequests with @(
-    Capabilities.UpdateRestrictions.Updatable : false,
-    Capabilities.DeleteRestrictions.Deletable : false
+    Capabilities.InsertRestrictions.Insertable : true,
+    Capabilities.UpdateRestrictions.Updatable : true,
+    Capabilities.DeleteRestrictions.Deletable : true,
+    UI.UpdateHidden : true
 );

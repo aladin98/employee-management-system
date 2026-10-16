@@ -44,14 +44,14 @@ service EmployeeService {
 
     @odata.draft.enabled
     entity PromotionRequests as projection on hr.PromotionRequests {
-        *,
-        false as canApprove : Boolean,
-        false as canReject  : Boolean
+    *,
+    false as canApprove : Boolean,
+    false as canReject  : Boolean
     } actions {
-        action approvePromotionRequest();
-        action rejectPromotionRequest();
+    action approvePromotionRequest();
+    action rejectPromotionRequest();
     };
-
+    
     entity PromotionFeedbacks as projection on hr.PromotionFeedbacks;
 
     entity Notifications as projection on hr.Notifications actions {

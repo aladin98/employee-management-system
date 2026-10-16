@@ -1730,121 +1730,106 @@ export default cds.service.impl(async function () {
   });
 
   this.on('approvePromotionRequest', async (req) => {
-    const promotionRequestId = req.params[0].ID;
+  const promotionRequestId = req.params[0].ID;
 
-    const validation = await validateCurrentApprover(
-      req,
-      PromotionRequests,
-      promotionRequestId,
-      'Promotion request',
-      ['SUBMITTED', 'IN_REVIEW']
-    );
-    if (!validation) return;
+  const validation = await validateCurrentApprover(
+    req,
+    PromotionRequests,
+    promotionRequestId,
+    'Promotion request',
+    ['SUBMITTED', 'IN_REVIEW']
+  );
+  if (!validation) return;
 
-    const { loggedInEmployee, requestRecord } = validation;
+  const { loggedInEmployee, requestRecord } = validation;
 
-    await createS4PromotionFeedback({
-      promotionRequest_ID: promotionRequestId,
-      author_ID: loggedInEmployee.ID,
-      authorRole: getRoleLabel(loggedInEmployee.role_ID),
-      feedbackText: 'Approved',
-      recommendation: 'APPROVED'
+  await createS4PromotionFeedback({
+    promotionRequest_ID: promotionRequestId,
+    author_ID: loggedInEmployee.ID,
+    authorRole: getRoleLabel(loggedInEmployee.role_ID),
+    feedbackText: 'Approved',
+    recommendation: 'APPROVED'
+  });
+
+  await createPromotionFeedback({
+    promotionRequest_ID: promotionRequestId,
+    author_ID: loggedInEmployee.ID,
+    authorRole: getRoleLabel(loggedInEmployee.role_ID),
+    feedbackText: 'Approved',
+    recommendation: 'APPROVED'
+  });
+
+  const nextStep = await getNextPromotionStep(requestRecord);
+
+  if (nextStep?.error) {
+    req.error(400, nextStep.error);
+    return;
+  }
+
+  if (nextStep.final) {
+    const finalDecisionAt = new Date().toISOString();
+
+    await updateS4PromotionRequestById(promotionRequestId, {
+      Status: 'APPROVED',
+      StatusCriticality: '3.00',
+      FinalDecisionAt: finalDecisionAt,
+      CurrentApproverID: ''
     });
 
-    await createPromotionFeedback({
-      promotionRequest_ID: promotionRequestId,
-      author_ID: loggedInEmployee.ID,
-      authorRole: getRoleLabel(loggedInEmployee.role_ID),
-      feedbackText: 'Approved',
-      recommendation: 'APPROVED'
-    });
+    const promotionRequests = await fetchPromotionRequestsFromS4();
+    const fullPromotionRequest =
+      promotionRequests.find(r => r.ID === promotionRequestId) || null;
 
-    const nextStep = await getNextPromotionStep(requestRecord);
-
-    if (nextStep?.error) {
-      req.error(400, nextStep.error);
+    if (!fullPromotionRequest) {
+      req.error(404, 'Promotion request not found after S/4 approval update');
       return;
     }
 
-    if (nextStep.final) {
-      const finalDecisionAt = new Date().toISOString();
-      console.log('FINAL PROMOTION APPROVAL for:', promotionRequestId);
-
-      await UPDATE(PromotionRequests)
-        .set({
-          status: 'APPROVED',
-          statusCriticality: 3,
-          finalDecisionAt,
-          currentApprover_ID: null
-        })
-        .where({ ID: promotionRequestId });
-
-      console.log('Updating S4 Promotion Request status...');
-      await updateS4PromotionRequestById(promotionRequestId, {
-        Status: 'APPROVED',
-        StatusCriticality: '3.00',
-        FinalDecisionAt: finalDecisionAt,
-        CurrentApproverID: ''
-      });
-
-      const fullPromotionRequest = await SELECT.one
-        .from(PromotionRequests)
-        .columns(
-          'employeeConcerned_ID',
-          'requestedJobTitle_ID',
-          'requestedSalary'
-        )
-        .where({ ID: promotionRequestId });
-
-      console.log('Promotion request local data for employee update:', fullPromotionRequest);
-
-      if (fullPromotionRequest?.employeeConcerned_ID) {
-        console.log('Updating promoted employee in S4...');
-        await updateS4EmployeeById(fullPromotionRequest.employeeConcerned_ID, {
-          JobTitleID: fullPromotionRequest.requestedJobTitle_ID || '',
-          Salary_V: fullPromotionRequest.requestedSalary != null
+    if (fullPromotionRequest.employeeConcerned_ID) {
+      await updateS4EmployeeById(fullPromotionRequest.employeeConcerned_ID, {
+        JobTitleID: fullPromotionRequest.requestedJobTitle_ID || '',
+        Salary_V:
+          fullPromotionRequest.requestedSalary != null
             ? Number(fullPromotionRequest.requestedSalary).toFixed(3)
             : '0.000',
-          Salary_C: 'TND'
-        });
-      }
-
-      if (requestRecord?.requester_ID) {
-        await createNotification({
-          recipient_ID: requestRecord.requester_ID,
-          type: 'PROMOTION_APPROVED',
-          title: 'Promotion Request Approved',
-          message: `Your promotion request ${promotionRequestId} has been approved successfully`,
-          relatedEntityType: 'PromotionRequest',
-          relatedEntityID: promotionRequestId
-        });
-      }
-
-      req.info('Promotion request has been approved successfully');
-      return;
+        Salary_C: 'TND'
+      });
     }
 
-    await UPDATE(PromotionRequests)
-      .set({
-        status: 'IN_REVIEW',
-        statusCriticality: 2,
-        workflowLevel: nextStep.nextLevel,
-        currentApprover_ID: nextStep.nextApprover.ID
-      })
-      .where({ ID: promotionRequestId });
+    if (requestRecord?.requester_ID) {
+      await createNotification({
+        recipient_ID: requestRecord.requester_ID,
+        type: 'PROMOTION_APPROVED',
+        title: 'Promotion Request Approved',
+        message: `Your promotion request ${promotionRequestId} has been approved successfully`,
+        relatedEntityType: 'PromotionRequest',
+        relatedEntityID: promotionRequestId
+      });
+    }
 
-    await createNotificationIfMissing({
-      recipient_ID: nextStep.nextApprover.ID,
-      type: 'PROMOTION_SUBMITTED',
-      title: 'Promotion Request Requires Action',
-      message: `Promotion request ${promotionRequestId} requires your approval/validation`,
-      relatedEntityType: 'PromotionRequest',
-      relatedEntityID: promotionRequestId
-    });
+    req.info('Promotion request has been approved successfully');
+    return;
+  }
 
-    const nextApproverName = `${nextStep.nextApprover.firstName || ''} ${nextStep.nextApprover.lastName || ''}`.trim();
-    req.info(`Promotion request forwarded to ${nextApproverName}`);
+  await updateS4PromotionRequestById(promotionRequestId, {
+    Status: 'IN_REVIEW',
+    StatusCriticality: '2.00',
+    WorkflowLevel: Number(nextStep.nextLevel).toFixed(2),
+    CurrentApproverID: nextStep.nextApprover.ID
   });
+
+  await createNotificationIfMissing({
+    recipient_ID: nextStep.nextApprover.ID,
+    type: 'PROMOTION_SUBMITTED',
+    title: 'Promotion Request Requires Action',
+    message: `Promotion request ${promotionRequestId} requires your approval/validation`,
+    relatedEntityType: 'PromotionRequest',
+    relatedEntityID: promotionRequestId
+  });
+
+  const nextApproverName = `${nextStep.nextApprover.firstName || ''} ${nextStep.nextApprover.lastName || ''}`.trim();
+  req.info(`Promotion request forwarded to ${nextApproverName}`);
+});
 
   this.on('rejectPromotionRequest', async (req) => {
     const promotionRequestId = req.params[0].ID;
@@ -1907,6 +1892,65 @@ export default cds.service.impl(async function () {
 
     req.info('Promotion request has been rejected successfully');
   });
+
+  this.on('editPromotionRequest', async (req) => {
+  const promotionRequestId = req.params[0].ID;
+  const {
+    requestedSalary,
+    justification
+  } = req.data || {};
+
+  const loggedInEmployee = await getLoggedInEmployee(req);
+  if (!loggedInEmployee) return;
+
+  const promotionRequests = await fetchPromotionRequestsFromS4();
+  const promotionRequest = promotionRequests.find(r => r.ID === promotionRequestId);
+
+  if (!promotionRequest) {
+    req.error(404, 'Promotion request not found');
+    return;
+  }
+
+  const isRequester = promotionRequest.requester_ID === loggedInEmployee.ID;
+  const isHRAdmin = [ROLE.RH, ROLE.DRH].includes(loggedInEmployee.role_ID);
+
+  if (!isRequester && !isHRAdmin) {
+    req.error(403, 'Only the requester, RH, or DRH can edit this promotion request');
+    return;
+  }
+
+  const updates = {};
+
+  if (employeeConcerned_ID !== undefined) {
+    updates.EmployeeConcernedID = employeeConcerned_ID;
+
+    const employee = await getEmployeeById(employeeConcerned_ID);
+    if (employee) {
+      updates.CurrentJobTitleID = employee.jobTitle_ID || '';
+      updates.CurrentSalary_V =
+        employee.salary != null ? Number(employee.salary).toFixed(3) : '0.000';
+      updates.CurrentSalary_C = 'TND';
+    }
+  }
+
+  if (requestedJobTitle_ID !== undefined) {
+    updates.RequestedJobTitleID = requestedJobTitle_ID || '';
+  }
+
+  if (requestedSalary !== undefined) {
+    updates.RequestedSalary_V = Number(requestedSalary).toFixed(3);
+    updates.RequestedSalary_C = 'TND';
+  }
+
+  if (justification !== undefined) {
+    updates.Justification = justification;
+  }
+
+  await updateS4PromotionRequestById(promotionRequestId, updates);
+
+  req.info('Promotion request updated successfully');
+  return true;
+});
 
   this.on('getDashboardStats', async () => {
   const [employees, leaveRequests, promotionRequests, notificationResult] = await Promise.all([
