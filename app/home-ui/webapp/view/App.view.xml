@@ -26,7 +26,7 @@
               <VBox class="sapUiMediumMarginBottom" alignItems="Center">
                 <Title text="{home>/texts/appTitle}" level="H1" textAlign="Center" />
                 <Text
-                  text="{home>/texts/loginSubtitle}"
+                  text="{= ${home>/isResetMode} ? ${home>/texts/resetSubtitle} : ${home>/texts/loginSubtitle} }"
                   textAlign="Center"
                   wrapping="true"
                   class="sapUiSmallMarginTop" />
@@ -34,25 +34,85 @@
 
               <Panel class="sapUiResponsiveMargin" backgroundDesign="Translucent">
                 <VBox class="sapUiLargeMargin">
-                  <Label text="{home>/texts/selectUser}" class="sapUiSmallMarginBottom" />
-                  <Select
-                    id="demoUserSelect"
-                    width="100%"
-                    selectedKey="{home>/selectedDemoUser}"
-                    forceSelection="false"
-                    items="{home>/demoUsers}">
-                    <core:Item key="" text="{home>/texts/selectUser}" />
-                    <items>
-                    <core:Item key="{home>email}" text="{home>fullName}" />
-                    </items>
-                  </Select>
 
-                  <Button
-                    text="{home>/texts/login}"
-                    type="Emphasized"
-                    press=".onLoginPress"
-                    class="sapUiMediumMarginTop"
-                    width="100%" />
+                  <!-- LOGIN MODE -->
+                  <VBox visible="{= !${home>/isResetMode} }">
+                    <Label text="{home>/texts/email}" class="sapUiSmallMarginBottom" />
+                    <Input
+                      id="loginEmailInput"
+                      width="100%"
+                      value="{home>/loginEmail}"
+                      type="Email"
+                      placeholder="{home>/texts/email}" />
+
+                    <Label text="{home>/texts/password}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                    <Input
+                      id="loginPasswordInput"
+                      width="100%"
+                      value="{home>/loginPassword}"
+                      type="{= ${home>/showPassword} ? 'Text' : 'Password' }"
+                      placeholder="{home>/texts/password}" />
+
+                    <CheckBox
+                      text="{home>/texts/showPassword}"
+                      selected="{home>/showPassword}"
+                      select=".onToggleShowPassword"
+                      class="sapUiSmallMarginTop" />
+
+                    <Button
+                      text="{home>/texts/login}"
+                      type="Emphasized"
+                      press=".onLoginPress"
+                      class="sapUiMediumMarginTop"
+                      width="100%" />
+
+                    <Button
+                      text="{home>/texts/forgotPassword}"
+                      type="Transparent"
+                      press=".onForgotPasswordPress"
+                      class="sapUiSmallMarginTop"
+                      width="100%" />
+                  </VBox>
+
+                  <!-- RESET PASSWORD MODE -->
+                  <VBox visible="{home>/isResetMode}">
+                    <Label text="{home>/texts/newPassword}" class="sapUiSmallMarginBottom" />
+                    <Input
+                      id="resetPasswordInput"
+                      width="100%"
+                      value="{home>/resetPassword}"
+                      type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
+                      placeholder="{home>/texts/newPassword}" />
+
+                    <Label text="{home>/texts/confirmPassword}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                    <Input
+                      id="resetConfirmPasswordInput"
+                      width="100%"
+                      value="{home>/resetConfirmPassword}"
+                      type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
+                      placeholder="{home>/texts/confirmPassword}" />
+
+                    <CheckBox
+                      text="{home>/texts/showPassword}"
+                      selected="{home>/showResetPassword}"
+                      select=".onToggleShowResetPassword"
+                      class="sapUiSmallMarginTop" />
+
+                    <Button
+                      text="{home>/texts/resetPassword}"
+                      type="Emphasized"
+                      press=".onResetPasswordPress"
+                      class="sapUiMediumMarginTop"
+                      width="100%" />
+
+                    <Button
+                      text="{home>/texts/backToLogin}"
+                      type="Transparent"
+                      press=".onBackToLoginPress"
+                      class="sapUiSmallMarginTop"
+                      width="100%" />
+                  </VBox>
+
                 </VBox>
               </Panel>
             </VBox>
@@ -237,6 +297,37 @@
         press=".onLogoutPress" />
     </List>
   </Popover>
+
+  <Dialog
+    id="forgotPasswordDialog"
+    title="{home>/texts/forgotPassword}"
+    contentWidth="28rem"
+    draggable="true"
+    resizable="false">
+    <content>
+      <VBox class="sapUiMediumMargin">
+        <Text text="{home>/texts/forgotPasswordSubtitle}" wrapping="true" class="sapUiSmallMarginBottom" />
+        <Label text="{home>/texts/email}" class="sapUiSmallMarginBottom" />
+        <Input
+          id="forgotPasswordEmailInput"
+          value="{home>/forgotPasswordEmail}"
+          type="Email"
+          width="100%"
+          placeholder="{home>/texts/email}" />
+      </VBox>
+    </content>
+    <beginButton>
+      <Button
+        text="{home>/texts/sendResetLink}"
+        type="Emphasized"
+        press=".onSubmitForgotPasswordPress" />
+    </beginButton>
+    <endButton>
+      <Button
+        text="{home>/texts/close}"
+        press=".onCloseForgotPasswordDialog" />
+    </endButton>
+  </Dialog>
 
   <Dialog
     id="profileDialog"

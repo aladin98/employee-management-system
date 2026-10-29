@@ -22,6 +22,7 @@ annotate service.LeaveRequests with @(
         ID,
         status
     ],
+
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
@@ -50,6 +51,7 @@ annotate service.LeaveRequests with @(
             Criticality : statusCriticality
         }
     ],
+
     UI.Identification : [
         {
             $Type : 'UI.DataFieldForAction',
@@ -64,6 +66,28 @@ annotate service.LeaveRequests with @(
             ![@Core.OperationAvailable] : canReject
         }
     ],
+
+    UI.FieldGroup #CreateRequest : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>startDate}',
+                Value : startDate
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>endDate}',
+                Value : endDate
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>reason}',
+                Value : reason
+            }
+        ]
+    },
+
     UI.FieldGroup #GeneralInformation : {
         $Type : 'UI.FieldGroupType',
         Data : [
@@ -91,15 +115,21 @@ annotate service.LeaveRequests with @(
                 $Type : 'UI.DataField',
                 Label : '{@i18n>reason}',
                 Value : reason
+            },
+            {
+                $Type : 'UI.DataField',
+                Label : '{@i18n>status}',
+                Value : status
             }
         ]
     },
+
     UI.Facets : [
         {
             $Type : 'UI.ReferenceFacet',
-            ID : 'GeneralInformationFacet',
+            ID : 'CreateRequestFacet',
             Label : '{@i18n>generalInformation}',
-            Target : '@UI.FieldGroup#GeneralInformation'
+            Target : '@UI.FieldGroup#CreateRequest'
         }
     ]
 );
@@ -154,6 +184,7 @@ annotate service.LeaveRequests with {
 };
 
 annotate service.LeaveRequests with @(
-    Capabilities.UpdateRestrictions.Updatable : false,
-    Capabilities.DeleteRestrictions.Deletable : false
+    Capabilities.InsertRestrictions.Insertable : true,
+    Capabilities.UpdateRestrictions.Updatable : true,
+    Capabilities.DeleteRestrictions.Deletable : true
 );

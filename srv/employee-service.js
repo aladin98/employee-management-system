@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import cds from '@sap/cds';
 import fetch from 'node-fetch';
+import nodemailer from 'nodemailer';
 
 export default cds.service.impl(async function () {
   const {
@@ -19,6 +21,45 @@ export default cds.service.impl(async function () {
     DIRECTOR: 'R_DIR',
     RH: 'R_RH',
     DRH: 'R_DRH'
+  };
+
+  const sendResetPasswordEmail = async (toEmail, resetLink) => {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: toEmail,
+      subject: 'Password Reset Request',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Password Reset</h2>
+          <p>You requested to reset your password.</p>
+          <p>Click the link below to set a new password:</p>
+          <p>
+            <a href="${resetLink}" target="_blank">
+              Reset your password
+            </a>
+          </p>
+          <p>If you did not request this, you can ignore this email.</p>
+        </div>
+      `
+    });
+
+    console.log('Reset password email sent:', info.messageId);
+
+    if (nodemailer.getTestMessageUrl(info)) {
+      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+    }
+
+    return info;
   };
 
   const generateShortId = async (entity, prefix, length = 10) => {
@@ -379,34 +420,34 @@ export default cds.service.impl(async function () {
   };
 
   const callS4 = async ({ path, method = 'GET', data = null }) => {
-    const baseUrl = process.env.S4_BASE_URL;
-    const username = process.env.S4_USERNAME;
-    const password = process.env.S4_PASSWORD;
+  const baseUrl = process.env.S4_BASE_URL;
+  const username = process.env.S4_USERNAME;
+  const password = process.env.S4_PASSWORD;
 
-    if (!baseUrl || !username || !password) {
-      throw new Error('Missing S4 environment variables');
-    }
+  if (!baseUrl || !username || !password) {
+    throw new Error('Missing S4 environment variables');
+  }
 
-    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+  const auth = Buffer.from(`${username}:${password}`).toString('base64');
 
     const response = await fetch(`${baseUrl}${path}`, {
-      method,
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: data ? JSON.stringify(data) : undefined
-    });
+    method,
+    headers: {
+      Authorization: `Basic ${auth}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: data ? JSON.stringify(data) : undefined
+  });
 
-    const text = await response.text();
+  const text = await response.text();
 
-    if (!response.ok) {
+  if (!response.ok) {
       throw new Error(`S4 call failed: ${response.status} ${response.statusText} - ${text}`);
-    }
+  }
 
     return text ? JSON.parse(text) : {};
-  };
+};
 
   const parseS4Date = (value) => {
     if (!value) return null;
@@ -437,6 +478,87 @@ export default cds.service.impl(async function () {
 
     return null;
   };
+
+  const fetchPasswordResetsFromS4 = async () => {
+  const result = await callS4({
+    path: '/sap/opu/odata/sap/YY1_PASSWORDRESET_CDS/YY1_PASSWORDRESET?$format=json'
+  });
+
+  const rows = result?.d?.results || [];
+
+  return rows.map(row => ({
+    ID: row.ResetID,
+    email: row.Email,
+    token: row.Token,
+    expiresAt: row.ExpiresAt,
+    used: row.Used,
+    sapUuid: row.SAP_UUID
+  }));
+};
+
+  const createS4PasswordReset = async ({
+  email,
+  token,
+  expiresAt
+}) => {
+  const payload = {
+    ResetID: `PR${Date.now().toString().slice(-8)}`,
+    Email: email,
+    Token: token,
+    ExpiresAt: expiresAt,
+    Used: false
+  };
+
+  return await createS4({
+    servicePath: '/sap/opu/odata/sap/YY1_PASSWORDRESET_CDS',
+    entitySet: 'YY1_PASSWORDRESET',
+    data: payload
+  });
+};
+
+const updateS4PasswordResetByToken = async (token, updates) => {
+  const resets = await fetchPasswordResetsFromS4();
+  const target = resets.find(r => r.token === token);
+
+  if (!target?.sapUuid) {
+    throw new Error(`S4 Password Reset token not found for token ${token}`);
+  }
+
+  const entityPath = `YY1_PASSWORDRESET(guid'${target.sapUuid}')`;
+
+  return await updateS4({
+    servicePath: '/sap/opu/odata/sap/YY1_PASSWORDRESET_CDS',
+    entityPath,
+    data: updates,
+    method: 'PATCH'
+  });
+};
+
+const updateS4UserCredentialPasswordByEmail = async (email, newPassword) => {
+  const result = await callS4({
+    path: '/sap/opu/odata/sap/YY1_USERCREDENTIAL_CDS/YY1_USERCREDENTIAL?$format=json'
+  });
+
+  const rows = result?.d?.results || [];
+  const target = rows.find(
+    row => row.Email?.trim().toLowerCase() === email.trim().toLowerCase()
+  );
+
+  if (!target?.SAP_UUID) {
+    throw new Error(`S4 User Credential not found for email ${email}`);
+  }
+
+  const entityPath = `YY1_USERCREDENTIAL(guid'${target.SAP_UUID}')`;
+
+  return await updateS4({
+    servicePath: '/sap/opu/odata/sap/YY1_USERCREDENTIAL_CDS',
+    entityPath,
+    data: {
+      Password: newPassword
+    },
+    method: 'PATCH'
+  });
+};
 
   const fetchDepartmentsFromS4 = async () => {
     const result = await callS4({
@@ -612,6 +734,21 @@ export default cds.service.impl(async function () {
 
     return promotionRequests;
   };
+
+  const fetchUserCredentialsFromS4 = async () => {
+  const result = await callS4({
+    path: '/sap/opu/odata/sap/YY1_USERCREDENTIAL_CDS/YY1_USERCREDENTIAL?$format=json'
+  });
+
+  const rows = result?.d?.results || [];
+
+  return rows.map(row => ({
+    email: row.Email,
+    password: row.Password,
+    employeeID: row.EmployeeID,
+    isActive: row.IsActive
+  }));
+};
 
   const createS4 = async ({ servicePath, entitySet, data }) => {
     const baseUrl = process.env.S4_BASE_URL;
@@ -971,7 +1108,7 @@ export default cds.service.impl(async function () {
     recommendation
   }) => {
     const payload = {
-      PromotionFeedbackID: cds.utils.uuid(),
+      PromotionFeedbackID: `PF${Date.now().toString().slice(-8)}`,
       PromotionRequestID: promotionRequest_ID,
       AuthorID: author_ID,
       AuthorRole: authorRole,
@@ -986,6 +1123,135 @@ export default cds.service.impl(async function () {
       data: payload
     });
   };
+
+  this.on('login', async (req) => {
+  const { email, password } = req.data || {};
+
+  if (!email || !password) {
+    req.error(400, 'Email and password are required');
+    return;
+  }
+
+  const credentials = await fetchUserCredentialsFromS4();
+  const credential = credentials.find(
+    c => c.email === email && c.isActive
+  );
+
+  if (!credential) {
+    return {
+      success: false,
+      message: 'User not found or inactive',
+      email: '',
+      employeeID: '',
+      fullName: ''
+    };
+  }
+
+  if (credential.password !== password) {
+    return {
+      success: false,
+      message: 'Invalid password',
+      email: '',
+      employeeID: '',
+      fullName: ''
+    };
+  }
+
+  const employee = await getEmployeeById(credential.employeeID);
+
+  if (!employee) {
+    return {
+      success: false,
+      message: 'Linked employee not found in S/4',
+      email: '',
+      employeeID: '',
+      fullName: ''
+    };
+  }
+
+  return {
+    success: true,
+    message: 'Login successful',
+    email: employee.email || email,
+    employeeID: employee.ID,
+    fullName: employee.fullName || ''
+  };
+});
+
+this.on('forgotPassword', async (req) => {
+  const { email } = req.data || {};
+
+  if (!email) {
+    req.error(400, 'Email is required');
+    return;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const credentials = await fetchUserCredentialsFromS4();
+  const credential = credentials.find(
+    c => c.email?.trim().toLowerCase() === normalizedEmail && c.isActive
+  );
+
+  if (!credential) {
+    return 'No active account found for this email';
+  }
+
+  const token = cds.utils.uuid();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 min
+
+  await createS4PasswordReset({
+    email: credential.email,
+    token,
+    expiresAt
+  });
+
+  const appBaseUrl = process.env.APP_BASE_URL || `${req._.req.protocol}://${req._.req.headers.host}`;
+  const resetLink = `${appBaseUrl}/home-ui/webapp/index.html?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendResetPasswordEmail(credential.email, resetLink);
+    console.log(`Password reset link for ${credential.email}: ${resetLink}`);
+    return `Password reset email sent to ${credential.email}`;
+  } catch (error) {
+    console.error('Failed to send reset password email:', error);
+    req.error(500, 'Unable to send reset password email');
+    return;
+  }
+});
+
+this.on('resetPassword', async (req) => {
+  const { token, newPassword } = req.data || {};
+
+  if (!token || !newPassword) {
+    req.error(400, 'Token and new password are required');
+    return;
+  }
+
+  const resets = await fetchPasswordResetsFromS4();
+  const resetRecord = resets.find(r => r.token === token);
+
+  if (!resetRecord) {
+    return 'Invalid reset token';
+  }
+
+  if (resetRecord.used) {
+    return 'This reset token has already been used';
+  }
+
+  const expiresAt = new Date(resetRecord.expiresAt);
+  if (expiresAt.getTime() < Date.now()) {
+    return 'This reset token has expired';
+  }
+
+  await updateS4UserCredentialPasswordByEmail(resetRecord.email, newPassword);
+
+  await updateS4PasswordResetByToken(token, {
+    Used: true
+  });
+
+  return 'Password reset successfully';
+});
 
   this.on('READ', Departments, async () => {
     return await fetchDepartmentsFromS4();
@@ -1951,7 +2217,6 @@ export default cds.service.impl(async function () {
   req.info('Promotion request updated successfully');
   return true;
 });
-
   this.on('getDashboardStats', async () => {
   const [employees, leaveRequests, promotionRequests, notificationResult] = await Promise.all([
     fetchEmployeesFromS4(),

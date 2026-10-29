@@ -110,3 +110,10 @@ entity Notifications : managed {
         isRead            : Boolean default false;
         createdAt         : Timestamp;
 }
+
+entity UserCredentials {
+    key email        : String(100);
+        passwordHash : String(255);
+        employeeID   : String(10);
+        isActive     : Boolean default true;
+}

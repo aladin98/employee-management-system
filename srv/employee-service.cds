@@ -20,6 +20,14 @@ service EmployeeService {
         manager    : String(100);
     }
 
+    type LoginResult {
+        success    : Boolean;
+        message    : String;
+        email      : String(100);
+        employeeID : String(10);
+        fullName   : String(100);
+    }
+
     entity Departments as projection on hr.Departments;
     entity Roles       as projection on hr.Roles;
     entity JobTitles   as projection on hr.JobTitles;
@@ -44,12 +52,12 @@ service EmployeeService {
 
     @odata.draft.enabled
     entity PromotionRequests as projection on hr.PromotionRequests {
-    *,
-    false as canApprove : Boolean,
-    false as canReject  : Boolean
+        *,
+        false as canApprove : Boolean,
+        false as canReject  : Boolean
     } actions {
-    action approvePromotionRequest();
-    action rejectPromotionRequest();
+        action approvePromotionRequest();
+        action rejectPromotionRequest();
     };
     
     entity PromotionFeedbacks as projection on hr.PromotionFeedbacks;
@@ -66,5 +74,8 @@ service EmployeeService {
     function createS4LeaveRequest() returns String;
     function createS4PromotionRequest() returns String;
     function testS4PromotionFeedbacks() returns String;
-    
+
+    action login(email : String, password : String) returns LoginResult;
+    action forgotPassword(email : String) returns String;
+    action resetPassword(token : String, newPassword : String) returns String;
 }
