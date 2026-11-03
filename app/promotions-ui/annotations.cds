@@ -23,7 +23,7 @@ annotate service.PromotionRequests with @(
         TypeNamePlural : '{@i18n>PromotionRequests}',
         Title : {
             $Type : 'UI.DataField',
-            Value : ID
+            Value : '{@i18n>PromotionRequest}'
         }
     },
 

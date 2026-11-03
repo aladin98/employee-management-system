@@ -24,7 +24,7 @@ entity JobTitles : managed {
 }
 
 entity Employees : managed {
-    key ID          : String(10);
+    key ID          : UUID;
         firstName   : String(20);
         lastName    : String(20);
         fullName    : String(40);
@@ -42,7 +42,7 @@ entity Employees : managed {
 }
 
 entity LeaveRequests : managed {
-    key ID               : String(10);
+    key ID               : UUID;
         requester        : Association to Employees;
         startDate        : Date;
         endDate          : Date;
@@ -70,7 +70,7 @@ entity LeaveApprovals : managed {
 }
 
 entity PromotionRequests : managed {
-    key ID                  : String(10);
+    key ID                  : UUID;
         requester           : Association to Employees;
         employeeConcerned   : Association to Employees;
         currentJobTitle     : Association to JobTitles;

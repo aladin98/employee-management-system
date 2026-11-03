@@ -160,6 +160,12 @@ export default cds.service.impl(async function () {
     }
   };
 
+  const isValidEmail = (email) => {
+    if (!email || typeof email !== 'string') return false;
+    const sEmail = email.trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sEmail);
+  };
+
   const getLoggedInEmployee = async (req) => {
     const userEmail =
       req.headers?.['x-demo-user'] ||
@@ -1381,6 +1387,13 @@ this.on('resetPassword', async (req) => {
     const data = req.data;
     if (data) {
       data.fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+
+      if (!data.email || !isValidEmail(data.email)) {
+        req.error(400, 'Please enter a valid email address');
+        return;
+      }
+
+      data.email = data.email.trim().toLowerCase();
     }
   });
 
@@ -1391,9 +1404,18 @@ this.on('resetPassword', async (req) => {
     const data = req.data;
     if (data) {
       data.fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+
+      if (data.email !== undefined) {
+        if (!data.email || !isValidEmail(data.email)) {
+          req.error(400, 'Please enter a valid email address');
+          return;
+        }
+
+        data.email = data.email.trim().toLowerCase();
+      }
     }
   });
-
+  
   this.before('DELETE', Employees, async (req) => {
     const allowed = await ensureHRAdminForEmployeeMaintenance(req);
     if (!allowed) return;
@@ -1401,6 +1423,10 @@ this.on('resetPassword', async (req) => {
 
   this.on('CREATE', Employees, async (req) => {
     const data = req.data;
+
+    if (!data.ID) {
+      data.ID = await generateShortId(Employees, 'E', 10);
+    }
 
     const payload = {
       EmployeeID: data.ID,

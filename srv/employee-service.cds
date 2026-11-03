@@ -59,7 +59,7 @@ service EmployeeService {
         action approvePromotionRequest();
         action rejectPromotionRequest();
     };
-    
+
     entity PromotionFeedbacks as projection on hr.PromotionFeedbacks;
 
     entity Notifications as projection on hr.Notifications actions {

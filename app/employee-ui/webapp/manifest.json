@@ -93,6 +93,19 @@
     "resources": {
       "css": []
     },
+    "extends": {
+      "extensions": {
+        "sap.ui.viewExtensions": {
+          "sap.fe.templates.ObjectPage.ObjectPageController": {
+            "AfterHeaderFacet|Employees": {
+              "className": "sap.ui.core.Fragment",
+              "fragmentName": "my.company.hr.employeeui.ext.employee.CreateTitle",
+              "type": "XML"
+            }
+          }
+        }
+      }
+    },
     "routing": {
       "config": {},
       "routes": [

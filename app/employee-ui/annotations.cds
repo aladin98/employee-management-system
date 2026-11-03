@@ -30,9 +30,18 @@ annotate service.Employees with {
 };
 
 annotate service.Employees with @(
+    UI.HeaderInfo : {
+        TypeName : '{@i18n>employee}',
+        TypeNamePlural : '{@i18n>employees}',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : '{@i18n>createEmployeeTitle}'
+        }
+    },
     UI.SelectionFields : [
-        ID,
-        firstName
+        firstName,
+        lastName,
+        email
     ],
     UI.LineItem : [
         {
@@ -48,22 +57,22 @@ annotate service.Employees with @(
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>department}',
-            Value : department.name
+            Value : department_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>role}',
-            Value : role.name
+            Value : role_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>jobTitle}',
-            Value : jobTitle.title
+            Value : jobTitle_ID
         },
         {
             $Type : 'UI.DataField',
             Label : '{@i18n>manager}',
-            Value : manager.fullName
+            Value : manager_ID
         }
     ],
     UI.FieldGroup #GeneralInformation : {
@@ -112,22 +121,22 @@ annotate service.Employees with @(
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>department}',
-                Value : department.name
+                Value : department_ID
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>role}',
-                Value : role.name
+                Value : role_ID
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>jobTitle}',
-                Value : jobTitle.title
+                Value : jobTitle_ID
             },
             {
                 $Type : 'UI.DataField',
                 Label : '{@i18n>manager}',
-                Value : manager.fullName
+                Value : manager_ID
             }
         ]
     },
@@ -228,6 +237,7 @@ annotate service.Employees with {
 };
 
 annotate service.Employees with @(
-    Capabilities.UpdateRestrictions.Updatable : false,
-    Capabilities.DeleteRestrictions.Deletable : false
+    Capabilities.InsertRestrictions.Insertable : true,
+    Capabilities.UpdateRestrictions.Updatable : true,
+    Capabilities.DeleteRestrictions.Deletable : true
 );
