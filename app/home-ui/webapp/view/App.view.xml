@@ -11,117 +11,166 @@
       <Page showHeader="false">
         <content>
 
-          <VBox
+          <!-- LOGIN / RESET AREA -->
+          <HBox
             fitContainer="true"
-            justifyContent="Center"
-            alignItems="Center"
+            wrap="Wrap"
             visible="{= !${home>/isLoggedIn} }"
-            class="sapUiResponsiveContentPadding">
+            class="homeLoginWrapper homeLoginSplitLayout">
 
             <VBox
-              width="28rem"
-              class="sapUiMediumMargin"
-              renderType="Bare">
+              justifyContent="Center"
+              class="homeLoginBrandPanel">
 
-              <VBox class="sapUiMediumMarginBottom" alignItems="Center">
-                <Title text="{home>/texts/appTitle}" level="H1" textAlign="Center" />
+              <VBox class="homeLoginBrandContent">
+                <Image
+                  src="img/weslaty-logo.png"
+                  width="16rem"
+                  densityAware="false"
+                  decorative="false"
+                  class="homeBrandLogo sapUiMediumMarginBottom" />
+
+                <Text text="HR PORTAL" class="homeLoginEyebrow" />
+                <Title text="{home>/texts/appTitle}" level="H1" class="homeLoginHeroTitle" />
                 <Text
-                  text="{= ${home>/isResetMode} ? ${home>/texts/resetSubtitle} : ${home>/texts/loginSubtitle} }"
-                  textAlign="Center"
+                  text="Secure access to employee records, leave workflows, promotion processes and notifications."
                   wrapping="true"
-                  class="sapUiSmallMarginTop" />
-              </VBox>
+                  class="homeLoginHeroSubtitle" />
 
-              <Panel class="sapUiResponsiveMargin" backgroundDesign="Translucent">
-                <VBox class="sapUiLargeMargin">
+                <VBox class="homeLoginHighlights sapUiLargeMarginTop">
+                  <HBox alignItems="Center" class="homeLoginHighlightItem">
+                    <core:Icon src="sap-icon://employee" class="homeLoginHighlightIcon" />
+                    <Text text="Employee administration and master data" class="homeLoginHighlightText" />
+                  </HBox>
 
-                  <!-- LOGIN MODE -->
-                  <VBox visible="{= !${home>/isResetMode} }">
-                    <Label text="{home>/texts/email}" class="sapUiSmallMarginBottom" />
-                    <Input
-                      id="loginEmailInput"
-                      width="100%"
-                      value="{home>/loginEmail}"
-                      type="Email"
-                      placeholder="{home>/texts/email}" />
+                  <HBox alignItems="Center" class="homeLoginHighlightItem">
+                    <core:Icon src="sap-icon://calendar" class="homeLoginHighlightIcon" />
+                    <Text text="Leave approval and workflow tracking" class="homeLoginHighlightText" />
+                  </HBox>
 
-                    <Label text="{home>/texts/password}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
-                    <Input
-                      id="loginPasswordInput"
-                      width="100%"
-                      value="{home>/loginPassword}"
-                      type="{= ${home>/showPassword} ? 'Text' : 'Password' }"
-                      placeholder="{home>/texts/password}" />
-
-                    <CheckBox
-                      text="{home>/texts/showPassword}"
-                      selected="{home>/showPassword}"
-                      select=".onToggleShowPassword"
-                      class="sapUiSmallMarginTop" />
-
-                    <Button
-                      text="{home>/texts/login}"
-                      type="Emphasized"
-                      press=".onLoginPress"
-                      class="sapUiMediumMarginTop"
-                      width="100%" />
-
-                    <Button
-                      text="{home>/texts/forgotPassword}"
-                      type="Transparent"
-                      press=".onForgotPasswordPress"
-                      class="sapUiSmallMarginTop"
-                      width="100%" />
-                  </VBox>
-
-                  <!-- RESET PASSWORD MODE -->
-                  <VBox visible="{home>/isResetMode}">
-                    <Label text="{home>/texts/newPassword}" class="sapUiSmallMarginBottom" />
-                    <Input
-                      id="resetPasswordInput"
-                      width="100%"
-                      value="{home>/resetPassword}"
-                      type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
-                      placeholder="{home>/texts/newPassword}" />
-
-                    <Label text="{home>/texts/confirmPassword}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
-                    <Input
-                      id="resetConfirmPasswordInput"
-                      width="100%"
-                      value="{home>/resetConfirmPassword}"
-                      type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
-                      placeholder="{home>/texts/confirmPassword}" />
-
-                    <CheckBox
-                      text="{home>/texts/showPassword}"
-                      selected="{home>/showResetPassword}"
-                      select=".onToggleShowResetPassword"
-                      class="sapUiSmallMarginTop" />
-
-                    <Button
-                      text="{home>/texts/resetPassword}"
-                      type="Emphasized"
-                      press=".onResetPasswordPress"
-                      class="sapUiMediumMarginTop"
-                      width="100%" />
-
-                    <Button
-                      text="{home>/texts/backToLogin}"
-                      type="Transparent"
-                      press=".onBackToLoginPress"
-                      class="sapUiSmallMarginTop"
-                      width="100%" />
-                  </VBox>
-
+                  <HBox alignItems="Center" class="homeLoginHighlightItem">
+                    <core:Icon src="sap-icon://bell" class="homeLoginHighlightIcon" />
+                    <Text text="Centralized HR alerts and updates" class="homeLoginHighlightText" />
+                  </HBox>
                 </VBox>
-              </Panel>
+              </VBox>
             </VBox>
-          </VBox>
 
-          <VBox fitContainer="true" visible="{home>/isLoggedIn}">
+            <VBox
+              justifyContent="Center"
+              alignItems="Center"
+              class="homeLoginFormPanel">
+
+              <VBox width="28rem" class="homeLoginCardWrapper">
+                <Panel class="homeLoginPanel homeLoginPremiumPanel" backgroundDesign="Solid">
+                  <VBox class="sapUiLargeMargin">
+
+                    <VBox class="sapUiMediumMarginBottom">
+                      <Title
+                        text="{= ${home>/isResetMode} ? ${home>/texts/resetPassword} : ${home>/texts/login} }"
+                        level="H2"
+                        class="homeLoginCardTitle" />
+                      <Text
+                        text="{= ${home>/isResetMode} ? ${home>/texts/resetSubtitle} : ${home>/texts/loginSubtitle} }"
+                        wrapping="true"
+                        class="homeLoginCardSubtitle sapUiSmallMarginTop" />
+                    </VBox>
+
+                    <!-- LOGIN MODE -->
+                    <VBox visible="{= !${home>/isResetMode} }">
+                      <Label text="{home>/texts/email}" class="sapUiSmallMarginBottom" />
+                      <Input
+                        id="loginEmailInput"
+                        width="100%"
+                        value="{home>/loginEmail}"
+                        type="Email"
+                        placeholder="{home>/texts/email}" />
+
+                      <Label text="{home>/texts/password}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                      <Input
+                        id="loginPasswordInput"
+                        width="100%"
+                        value="{home>/loginPassword}"
+                        type="{= ${home>/showPassword} ? 'Text' : 'Password' }"
+                        placeholder="{home>/texts/password}" />
+
+                      <CheckBox
+                        text="{home>/texts/showPassword}"
+                        selected="{home>/showPassword}"
+                        select=".onToggleShowPassword"
+                        class="sapUiSmallMarginTop" />
+
+                      <Button
+                        text="{home>/texts/login}"
+                        type="Emphasized"
+                        press=".onLoginPress"
+                        class="sapUiMediumMarginTop homePrimaryLoginButton"
+                        width="100%" />
+
+                      <Button
+                        text="{home>/texts/forgotPassword}"
+                        type="Transparent"
+                        press=".onForgotPasswordPress"
+                        class="sapUiSmallMarginTop"
+                        width="100%" />
+                    </VBox>
+
+                    <!-- RESET PASSWORD MODE -->
+                    <VBox visible="{home>/isResetMode}">
+                      <Label text="{home>/texts/newPassword}" class="sapUiSmallMarginBottom" />
+                      <Input
+                        id="resetPasswordInput"
+                        width="100%"
+                        value="{home>/resetPassword}"
+                        type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
+                        placeholder="{home>/texts/newPassword}" />
+
+                      <Label text="{home>/texts/confirmPassword}" class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
+                      <Input
+                        id="resetConfirmPasswordInput"
+                        width="100%"
+                        value="{home>/resetConfirmPassword}"
+                        type="{= ${home>/showResetPassword} ? 'Text' : 'Password' }"
+                        placeholder="{home>/texts/confirmPassword}" />
+
+                      <CheckBox
+                        text="{home>/texts/showPassword}"
+                        selected="{home>/showResetPassword}"
+                        select=".onToggleShowResetPassword"
+                        class="sapUiSmallMarginTop" />
+
+                      <Button
+                        text="{home>/texts/resetPassword}"
+                        type="Emphasized"
+                        press=".onResetPasswordPress"
+                        class="sapUiMediumMarginTop homePrimaryLoginButton"
+                        width="100%" />
+
+                      <Button
+                        text="{home>/texts/backToLogin}"
+                        type="Transparent"
+                        press=".onBackToLoginPress"
+                        class="sapUiSmallMarginTop"
+                        width="100%" />
+                    </VBox>
+
+                  </VBox>
+                </Panel>
+              </VBox>
+            </VBox>
+          </HBox>
+
+          <!-- DASHBOARD AREA -->
+          <VBox fitContainer="true" visible="{home>/isLoggedIn}" class="homeDashboardPage">
 
             <Toolbar class="homeShellBar">
-              <Title text="{home>/texts/appTitle}" level="H3" />
+              <Image
+                src="img/weslaty-logo.png"
+                width="7rem"
+                densityAware="false"
+                decorative="false"
+                class="homeToolbarLogo sapUiTinyMarginEnd" />
+              <Title text="{home>/texts/appTitle}" level="H4" class="homeShellTitle" />
               <ToolbarSpacer />
               <Button text="{home>/texts/home}" type="Transparent" />
               <Button
@@ -130,144 +179,206 @@
                 type="Transparent"
                 press=".onOpenUserMenu"
                 tooltip="{home>/texts/myProfile}" />
-              <Text text="{home>/department}" class="sapUiTinyMarginBegin sapUiTinyMarginEnd" />
             </Toolbar>
 
-            <VBox class="homeHeroSection">
-              <Title text="{home>/texts/welcomeTitle}" level="H1" />
-              <Text text="{home>/texts/welcomeText}" wrapping="true" class="sapUiSmallMarginTop" />
-            </VBox>
+            <ScrollContainer height="100%" vertical="true" horizontal="false" class="homeScrollContainer">
+              <VBox class="homeContentWrapper">
 
-            <HBox wrap="Wrap" class="homeStatsSection">
-              <GenericTile class="homeKpiTile">
-                <TileContent footer="{home>/texts/employees}">
-                  <content>
-                    <NumericContent value="{home>/stats/employees}" icon="sap-icon://employee" />
-                  </content>
-                </TileContent>
-              </GenericTile>
+                <!-- Premium hero -->
+                <HBox wrap="Wrap" justifyContent="SpaceBetween" alignItems="Center" class="homePremiumHero">
+                  <VBox class="homePremiumHeroLeft">
+                    <Text
+                      text="{= ${home>/greeting} + ', ' + ${home>/userName} }"
+                      class="homeGreetingText" />
+                    <Title text="{home>/texts/workspaceTitle}" level="H1" class="homePremiumHeroTitle" />
+                    <Text text="{home>/texts/workspaceSubtitle}" wrapping="true" class="homePremiumHeroSubtitle" />
 
-              <GenericTile class="homeKpiTile">
-                <TileContent footer="{home>/texts/pendingLeaveRequests}">
-                  <content>
-                    <NumericContent value="{home>/stats/leave}" icon="sap-icon://calendar" valueColor="Critical" />
-                  </content>
-                </TileContent>
-              </GenericTile>
+                    <HBox wrap="Wrap" class="homeHeroInfoRow sapUiSmallMarginTop">
+                      <ObjectStatus text="{home>/role}" state="Information" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+                      <ObjectStatus text="{home>/department}" state="None" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+                    </HBox>
+                  </VBox>
 
-              <GenericTile class="homeKpiTile">
-                <TileContent footer="{home>/texts/promotionRequests}">
-                  <content>
-                    <NumericContent value="{home>/stats/promotions}" icon="sap-icon://business-objects-experience" valueColor="Neutral" />
-                  </content>
-                </TileContent>
-              </GenericTile>
+                  <VBox class="homePremiumHeroRight" alignItems="End">
+                    <Text text="{home>/texts/todayLabel}" class="homeHeroDateLabel" />
+                    <Text text="{home>/currentDateText}" class="homeHeroDateValue sapUiTinyMarginTop" />
+                  </VBox>
+                </HBox>
 
-              <GenericTile class="homeKpiTile">
-                <TileContent footer="{home>/texts/unreadNotifications}">
-                  <content>
-                    <NumericContent value="{home>/stats/notifications}" icon="sap-icon://bell" valueColor="Good" />
-                  </content>
-                </TileContent>
-              </GenericTile>
-            </HBox>
+                <!-- KPI Cards -->
+                <VBox class="homeSectionBlock">
+                  <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiSmallMarginBottom">
+                    <Title text="{home>/texts/overview}" level="H4" class="homeSectionTitleNoMargin" />
+                    <Text text="{home>/texts/pendingApprovals}" class="homeSectionHint" />
+                  </HBox>
 
-            <VBox class="homeSectionContainer">
-              <Title text="{home>/texts/applications}" level="H3" class="sapUiSmallMarginBottom" />
-              <l:Grid defaultSpan="L3 M6 S12" hSpacing="1" vSpacing="1">
+                  <HBox wrap="Wrap" class="homeStatsCardsRow">
 
-                <GenericTile
-                  header="{home>/texts/employees}"
-                  subheader="{home>/texts/employeesSub}"
-                  press=".onOpenEmployees"
-                  class="homeAppTile">
-                  <tileContent>
-                    <TileContent footer="{home>/texts/masterData}">
-                      <content>
-                        <NumericContent value="EMP" icon="sap-icon://employee" />
-                      </content>
-                    </TileContent>
-                  </tileContent>
-                </GenericTile>
+                    <VBox class="homeStatCard homeStatCardBlue homeClickableCard">
+                      <Button type="Transparent" press=".onOpenEmployeesKpi" class="homeCardOverlayButton" />
+                      <HBox justifyContent="SpaceBetween" alignItems="Start">
+                        <VBox>
+                          <Text text="{home>/texts/employees}" class="homeStatLabel" />
+                          <Title text="{home>/stats/employees}" level="H2" class="homeStatValue" />
+                        </VBox>
+                        <core:Icon src="sap-icon://employee" class="homeStatIcon" />
+                      </HBox>
+                    </VBox>
 
-                <GenericTile
-                  header="{home>/texts/pendingLeaveRequests}"
-                  subheader="{home>/texts/leaveSub}"
-                  press=".onOpenLeaveRequests"
-                  class="homeAppTile">
-                  <tileContent>
-                    <TileContent footer="{home>/texts/workflow}">
-                      <content>
-                        <NumericContent value="LEV" icon="sap-icon://calendar" />
-                      </content>
-                    </TileContent>
-                  </tileContent>
-                </GenericTile>
+                    <VBox class="homeStatCard homeStatCardOrange homeClickableCard">
+                      <Button type="Transparent" press=".onOpenLeaveKpi" class="homeCardOverlayButton" />
+                      <HBox justifyContent="SpaceBetween" alignItems="Start">
+                        <VBox>
+                          <Text text="{home>/texts/pendingLeaveRequests}" class="homeStatLabel" />
+                          <Title text="{home>/stats/leave}" level="H2" class="homeStatValue" />
+                        </VBox>
+                        <core:Icon src="sap-icon://calendar" class="homeStatIcon" />
+                      </HBox>
+                    </VBox>
 
-                <GenericTile
-                  header="{home>/texts/promotionRequests}"
-                  subheader="{home>/texts/promotionSub}"
-                  press=".onOpenPromotions"
-                  class="homeAppTile">
-                  <tileContent>
-                    <TileContent footer="{home>/texts/workflow}">
-                      <content>
-                        <NumericContent value="PRO" icon="sap-icon://business-objects-experience" />
-                      </content>
-                    </TileContent>
-                  </tileContent>
-                </GenericTile>
+                    <VBox class="homeStatCard homeStatCardPurple homeClickableCard">
+                      <Button type="Transparent" press=".onOpenPromotionsKpi" class="homeCardOverlayButton" />
+                      <HBox justifyContent="SpaceBetween" alignItems="Start">
+                        <VBox>
+                          <Text text="{home>/texts/promotionRequests}" class="homeStatLabel" />
+                          <Title text="{home>/stats/promotions}" level="H2" class="homeStatValue" />
+                        </VBox>
+                        <core:Icon src="sap-icon://business-objects-experience" class="homeStatIcon" />
+                      </HBox>
+                    </VBox>
 
-                <GenericTile
-                  header="{home>/texts/feedbacks}"
-                  subheader="{home>/texts/feedbackSub}"
-                  press=".onOpenPromotionFeedbacks"
-                  class="homeAppTile">
-                  <tileContent>
-                    <TileContent footer="{home>/texts/history}">
-                      <content>
-                        <NumericContent value="FDB" icon="sap-icon://feedback" />
-                      </content>
-                    </TileContent>
-                  </tileContent>
-                </GenericTile>
+                    <VBox class="homeStatCard homeStatCardGreen homeClickableCard">
+                      <Button type="Transparent" press=".onOpenNotificationsKpi" class="homeCardOverlayButton" />
+                      <HBox justifyContent="SpaceBetween" alignItems="Start">
+                        <VBox>
+                          <Text text="{home>/texts/unreadNotifications}" class="homeStatLabel" />
+                          <Title text="{home>/stats/notifications}" level="H2" class="homeStatValue" />
+                        </VBox>
+                        <core:Icon src="sap-icon://bell" class="homeStatIcon" />
+                      </HBox>
+                    </VBox>
 
-                <GenericTile
-                  header="{home>/texts/notifications}"
-                  subheader="{home>/texts/notificationsSub}"
-                  press=".onOpenNotifications"
-                  class="homeAppTile">
-                  <tileContent>
-                    <TileContent footer="{home>/texts/communication}">
-                      <content>
-                        <NumericContent value="NTF" icon="sap-icon://bell" />
-                      </content>
-                    </TileContent>
-                  </tileContent>
-                </GenericTile>
+                  </HBox>
+                </VBox>
 
-              </l:Grid>
-            </VBox>
+                <!-- Modules -->
+                <VBox class="homeSectionBlock">
+                  <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiSmallMarginBottom">
+                    <Title text="{home>/texts/modules}" level="H4" class="homeSectionTitleNoMargin" />
+                    <Text text="{home>/texts/applications}" class="homeSectionHint" />
+                  </HBox>
 
-            <VBox class="homeSectionContainer">
-              <Title text="{home>/texts/quickActions}" level="H3" class="sapUiSmallMarginBottom" />
-              <HBox wrap="Wrap">
-                <Button
-                  text="{home>/texts/openLeaveRequests}"
-                  type="Emphasized"
-                  press=".onOpenLeaveRequests"
-                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
-                <Button
-                  text="{home>/texts/openPromotionRequests}"
-                  press=".onOpenPromotions"
-                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
-                <Button
-                  text="{home>/texts/openNotifications}"
-                  press=".onOpenNotifications"
-                  class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
-              </HBox>
-            </VBox>
+                  <l:Grid defaultSpan="XL4 L4 M6 S12" hSpacing="1" vSpacing="1" class="homeModulesGrid">
 
+                    <Panel class="homeModuleCard">
+                      <VBox class="homeModuleCardContent">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                          <core:Icon src="sap-icon://employee" class="homeModuleIcon homeModuleIconBlue" />
+                          <ObjectStatus text="{home>/texts/masterData}" state="Information" />
+                        </HBox>
+                        <Title text="{home>/texts/employees}" level="H5" class="homeModuleTitle sapUiSmallMarginTop" />
+                        <Text text="{home>/texts/employeesSub}" wrapping="true" class="homeModuleDescription sapUiSmallMarginTop" />
+                        <Button
+                          text="{home>/texts/openModule}"
+                          press=".onOpenEmployees"
+                          type="Emphasized"
+                          class="homeModuleButton sapUiMediumMarginTop" />
+                      </VBox>
+                    </Panel>
+
+                    <Panel class="homeModuleCard">
+                      <VBox class="homeModuleCardContent">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                          <core:Icon src="sap-icon://calendar" class="homeModuleIcon homeModuleIconOrange" />
+                          <ObjectStatus text="{home>/texts/workflow}" state="Warning" />
+                        </HBox>
+                        <Title text="{home>/texts/pendingLeaveRequests}" level="H5" class="homeModuleTitle sapUiSmallMarginTop" />
+                        <Text text="{home>/texts/leaveSub}" wrapping="true" class="homeModuleDescription sapUiSmallMarginTop" />
+                        <Button
+                          text="{home>/texts/openModule}"
+                          press=".onOpenLeaveRequests"
+                          type="Emphasized"
+                          class="homeModuleButton sapUiMediumMarginTop" />
+                      </VBox>
+                    </Panel>
+
+                    <Panel class="homeModuleCard">
+                      <VBox class="homeModuleCardContent">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                          <core:Icon src="sap-icon://business-objects-experience" class="homeModuleIcon homeModuleIconPurple" />
+                          <ObjectStatus text="{home>/texts/workflow}" state="Information" />
+                        </HBox>
+                        <Title text="{home>/texts/promotionRequests}" level="H5" class="homeModuleTitle sapUiSmallMarginTop" />
+                        <Text text="{home>/texts/promotionSub}" wrapping="true" class="homeModuleDescription sapUiSmallMarginTop" />
+                        <Button
+                          text="{home>/texts/openModule}"
+                          press=".onOpenPromotions"
+                          type="Emphasized"
+                          class="homeModuleButton sapUiMediumMarginTop" />
+                      </VBox>
+                    </Panel>
+
+                    <Panel class="homeModuleCard">
+                      <VBox class="homeModuleCardContent">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                          <core:Icon src="sap-icon://feedback" class="homeModuleIcon homeModuleIconIndigo" />
+                          <ObjectStatus text="{home>/texts/history}" state="None" />
+                        </HBox>
+                        <Title text="{home>/texts/feedbacks}" level="H5" class="homeModuleTitle sapUiSmallMarginTop" />
+                        <Text text="{home>/texts/feedbackSub}" wrapping="true" class="homeModuleDescription sapUiSmallMarginTop" />
+                        <Button
+                          text="{home>/texts/openModule}"
+                          press=".onOpenPromotionFeedbacks"
+                          type="Emphasized"
+                          class="homeModuleButton sapUiMediumMarginTop" />
+                      </VBox>
+                    </Panel>
+
+                    <Panel class="homeModuleCard">
+                      <VBox class="homeModuleCardContent">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                          <core:Icon src="sap-icon://bell" class="homeModuleIcon homeModuleIconGreen" />
+                          <ObjectStatus text="{home>/texts/communication}" state="Success" />
+                        </HBox>
+                        <Title text="{home>/texts/notifications}" level="H5" class="homeModuleTitle sapUiSmallMarginTop" />
+                        <Text text="{home>/texts/notificationsSub}" wrapping="true" class="homeModuleDescription sapUiSmallMarginTop" />
+                        <Button
+                          text="{home>/texts/openModule}"
+                          press=".onOpenNotifications"
+                          type="Emphasized"
+                          class="homeModuleButton sapUiMediumMarginTop" />
+                      </VBox>
+                    </Panel>
+
+                  </l:Grid>
+                </VBox>
+
+                <!-- Quick Actions -->
+                <VBox class="homeSectionBlock homeQuickActionSection">
+                  <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiSmallMarginBottom">
+                    <Title text="{home>/texts/quickActions}" level="H4" class="homeSectionTitleNoMargin" />
+                    <Text text="{home>/texts/quickAccessDescription}" class="homeSectionHint" />
+                  </HBox>
+
+                  <HBox wrap="Wrap" class="homeQuickActionsRow">
+                    <Button
+                      text="{home>/texts/openLeaveRequests}"
+                      type="Emphasized"
+                      press=".onOpenLeaveRequests"
+                      class="homeActionButton" />
+                    <Button
+                      text="{home>/texts/openPromotionRequests}"
+                      press=".onOpenPromotions"
+                      class="homeActionButton" />
+                    <Button
+                      text="{home>/texts/openNotifications}"
+                      press=".onOpenNotifications"
+                      class="homeActionButton" />
+                  </HBox>
+                </VBox>
+
+              </VBox>
+            </ScrollContainer>
           </VBox>
 
         </content>

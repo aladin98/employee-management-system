@@ -1,30 +1,451 @@
+html,
+body,
+.sapUiBody,
+.sapMApp,
+.sapMPage {
+  height: 100%;
+  background: #f4f7fb;
+}
+
+.homeDashboardPage {
+  background: linear-gradient(180deg, #f7f9fc 0%, #f4f7fb 100%);
+}
+
+.homeScrollContainer {
+  height: calc(100vh - 3rem);
+}
+
+.homeContentWrapper {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 2rem 1.5rem;
+  gap: 1.5rem;
+}
+
 .homeShellBar {
-  background: #ffffff;
-  border-bottom: 1px solid #d9d9d9;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid #e6eaf0;
   padding: 0 1rem;
   min-height: 3.5rem;
+  backdrop-filter: blur(6px);
 }
 
-.homeHeroSection {
+.homeShellTitle {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Premium hero */
+.homePremiumHero {
+  background: linear-gradient(135deg, #f8fbff 0%, #edf4ff 55%, #eef2ff 100%);
+  border: 1px solid #dbe6f3;
+  border-radius: 1.2rem;
   padding: 2rem;
-  background: linear-gradient(90deg, #eef4fb 0%, #ffffff 100%);
-  border-bottom: 1px solid #e5e5e5;
+  margin-top: 1rem;
+  box-shadow: 0 0.6rem 1.4rem rgba(15, 23, 42, 0.05);
 }
 
-.homeStatsSection {
-  padding: 1rem 1.5rem 0 1.5rem;
+.homePremiumHeroLeft {
+  max-width: 48rem;
 }
 
-.homeKpiTile {
-  margin-right: 1rem;
+.homeGreetingText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 0.4rem;
+}
+
+.homePremiumHeroTitle {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.homePremiumHeroSubtitle {
+  margin-top: 0.55rem;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 44rem;
+}
+
+.homeHeroInfoRow {
+  gap: 0.5rem;
+}
+
+.homePremiumHeroRight {
+  min-width: 14rem;
+  padding: 0.75rem 0 0.75rem 1rem;
+}
+
+.homeHeroDateLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.homeHeroDateValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: right;
+}
+
+/* Section cards */
+.homeSectionBlock {
+  background: #ffffff;
+  border: 1px solid #e6eaf0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 0.2rem 0.8rem rgba(15, 23, 42, 0.03);
+}
+
+.homeSectionTitleNoMargin {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0;
+}
+
+.homeSectionHint {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* KPI cards */
+.homeStatsCardsRow {
+  gap: 1rem;
+}
+
+.homeStatCard {
+  position: relative;
+  min-width: 16rem;
+  flex: 1 1 16rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.95rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 0.2rem 0.75rem rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.homeClickableCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.55rem 1.2rem rgba(15, 23, 42, 0.08);
+}
+
+.homeCardOverlayButton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 2;
+}
+
+.homeCardOverlayButton .sapMBtnInner {
+  border: none !important;
+  background: transparent !important;
+}
+
+.homeStatLabel {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  max-width: 12rem;
+}
+
+.homeStatValue {
+  margin-top: 0.35rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.homeStatIcon {
+  font-size: 1.45rem;
+  margin-left: 1rem;
+  margin-top: 0.2rem;
+}
+
+.homeStatCardBlue {
+  border-top: 0.28rem solid #2563eb;
+}
+
+.homeStatCardBlue .homeStatIcon {
+  color: #2563eb;
+}
+
+.homeStatCardOrange {
+  border-top: 0.28rem solid #f59e0b;
+}
+
+.homeStatCardOrange .homeStatIcon {
+  color: #f59e0b;
+}
+
+.homeStatCardPurple {
+  border-top: 0.28rem solid #7c3aed;
+}
+
+.homeStatCardPurple .homeStatIcon {
+  color: #7c3aed;
+}
+
+.homeStatCardGreen {
+  border-top: 0.28rem solid #10b981;
+}
+
+.homeStatCardGreen .homeStatIcon {
+  color: #10b981;
+}
+
+/* Modules */
+.homeModulesGrid {
+  margin-top: 0.25rem;
+}
+
+.homeModuleCard {
+  border-radius: 1rem !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 0.2rem 0.9rem rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: #ffffff;
+}
+
+.homeModuleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.7rem 1.4rem rgba(15, 23, 42, 0.08);
+}
+
+.homeModuleCardContent {
+  padding: 1.2rem;
+  min-height: 14.5rem;
+}
+
+.homeModuleIcon {
+  font-size: 1.55rem;
+}
+
+.homeModuleIconBlue {
+  color: #2563eb;
+}
+
+.homeModuleIconOrange {
+  color: #f59e0b;
+}
+
+.homeModuleIconPurple {
+  color: #7c3aed;
+}
+
+.homeModuleIconIndigo {
+  color: #4f46e5;
+}
+
+.homeModuleIconGreen {
+  color: #10b981;
+}
+
+.homeModuleTitle {
+  color: #111827;
+  font-weight: 700;
+}
+
+.homeModuleDescription {
+  color: #64748b;
+  line-height: 1.5;
+  min-height: 3rem;
+}
+
+.homeModuleButton {
+  align-self: flex-start;
+}
+
+.homeModuleButton .sapMBtnInner {
+  font-weight: 600;
+}
+
+/* Quick actions */
+.homeQuickActionSection {
   margin-bottom: 1rem;
-  min-width: 12rem;
 }
 
-.homeSectionContainer {
-  padding: 0 1.5rem 1.5rem 1.5rem;
+.homeQuickActionsRow {
+  gap: 0.75rem;
 }
 
-.homeAppTile {
-  margin: 0.5rem;
+.homeActionButton {
+  margin-bottom: 0.5rem;
+}
+
+/* Login page */
+.homeLoginWrapper {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.10), transparent 28%),
+    linear-gradient(135deg, #f8fbff 0%, #eef4fb 50%, #f8fafc 100%);
+}
+
+.homeLoginSplitLayout {
+  width: 100%;
+}
+
+.homeLoginBrandPanel {
+  flex: 1 1 50%;
+  min-width: 20rem;
+  padding: 3rem 4rem;
+}
+
+.homeLoginBrandContent {
+  max-width: 34rem;
+}
+
+.homeLoginEyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 0.75rem;
+}
+
+.homeLoginHeroTitle {
+  color: #0f172a;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.homeLoginHeroSubtitle {
+  color: #475569;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin-top: 0.75rem;
+  max-width: 30rem;
+}
+
+.homeLoginHighlights {
+  gap: 1rem;
+}
+
+.homeLoginHighlightItem {
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(219, 230, 243, 0.9);
+  box-shadow: 0 0.25rem 0.8rem rgba(15, 23, 42, 0.04);
+}
+
+.homeLoginHighlightIcon {
+  color: #2563eb;
+  font-size: 1.1rem;
+}
+
+.homeLoginHighlightText {
+  color: #334155;
+  line-height: 1.4;
+}
+
+.homeLoginFormPanel {
+  flex: 1 1 50%;
+  min-width: 20rem;
+  padding: 2rem;
+}
+
+.homeLoginCardWrapper {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.homeLoginPanel {
+  border-radius: 1.2rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, 0.10);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.homeLoginPremiumPanel {
+  overflow: hidden;
+}
+
+.homeLoginCardTitle {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.homeLoginCardSubtitle {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.homePrimaryLoginButton .sapMBtnInner {
+  font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+  .homeLoginBrandPanel,
+  .homeLoginFormPanel {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .homeLoginBrandPanel {
+    padding: 2.5rem 1.5rem 1rem 1.5rem;
+  }
+
+  .homeLoginFormPanel {
+    padding: 1rem 1.5rem 2rem 1.5rem;
+  }
+
+  .homeLoginCardWrapper {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .homeContentWrapper {
+    padding: 1rem;
+  }
+
+  .homePremiumHero {
+    padding: 1.25rem;
+  }
+
+  .homePremiumHeroRight {
+    align-items: flex-start !important;
+    padding-left: 0;
+    margin-top: 1rem;
+  }
+
+  .homeHeroDateValue {
+    text-align: left;
+  }
+
+  .homeStatCard {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .homeLoginBrandPanel {
+    padding: 2rem 1rem 0.5rem 1rem;
+  }
+
+  .homeLoginFormPanel {
+    padding: 1rem;
+  }
+
+  .homeLoginHighlightItem {
+    padding: 0.75rem 0.85rem;
+  }
+}
+.homeBrandLogo {
+  display: block;
+  max-width: 100%;
+}
+
+.homeToolbarLogo {
+  display: block;
+  max-height: 2.5rem;
 }

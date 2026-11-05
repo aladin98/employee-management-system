@@ -75,7 +75,18 @@ sap.ui.define([
         forgotPasswordError: "Impossible de traiter la demande de réinitialisation",
         resetPasswordError: "Impossible de réinitialiser le mot de passe",
         resetTokenMissing: "Le lien de réinitialisation est invalide ou incomplet",
-        resetPasswordSuccess: "Mot de passe réinitialisé avec succès"
+        resetPasswordSuccess: "Mot de passe réinitialisé avec succès",
+        overview: "Vue d’ensemble",
+        modules: "Modules",
+        quickAccessDescription: "Accédez rapidement aux fonctionnalités les plus utilisées.",
+        workspaceTitle: "Espace de travail RH",
+        workspaceSubtitle: "Pilotez les opérations RH quotidiennes depuis un tableau de bord centralisé.",
+        openModule: "Ouvrir",
+        todayLabel: "Aujourd’hui",
+        goodMorning: "Bonjour",
+        goodAfternoon: "Bon après-midi",
+        goodEvening: "Bonsoir",
+        pendingApprovals: "Approbations en attente"
       } : {
         appTitle: "Employee Management System",
         home: "Home",
@@ -138,7 +149,18 @@ sap.ui.define([
         forgotPasswordError: "Unable to process forgot password request",
         resetPasswordError: "Unable to reset password",
         resetTokenMissing: "Reset link is invalid or incomplete",
-        resetPasswordSuccess: "Password reset successfully"
+        resetPasswordSuccess: "Password reset successfully",
+        overview: "Overview",
+        modules: "Modules",
+        quickAccessDescription: "Quick access to the most frequently used functions.",
+        workspaceTitle: "HR Workspace",
+        workspaceSubtitle: "Manage day-to-day HR operations from a centralized dashboard.",
+        openModule: "Open",
+        todayLabel: "Today",
+        goodMorning: "Good morning",
+        goodAfternoon: "Good afternoon",
+        goodEvening: "Good evening",
+        pendingApprovals: "Pending approvals"
       };
 
       var oHomeModel = new JSONModel({
@@ -149,6 +171,8 @@ sap.ui.define([
         userName: "Demo User",
         role: "",
         department: "",
+        greeting: "",
+        currentDateText: "",
         selectedLanguage: sSelectedLanguage,
         loginEmail: "",
         loginPassword: "",
@@ -177,12 +201,14 @@ sap.ui.define([
       });
 
       this.getView().setModel(oHomeModel, "home");
+      this._setDashboardContextTexts();
       this._checkResetModeFromUrl();
 
       var sDemoUser = window.localStorage.getItem("demoUser");
       if (sDemoUser && !oHomeModel.getProperty("/isResetMode")) {
         oHomeModel.setProperty("/isLoggedIn", true);
         oHomeModel.setProperty("/loginEmail", sDemoUser);
+        this._setDashboardContextTexts();
         this._loadDashboardStats();
         this._loadCurrentProfile();
       }
@@ -226,6 +252,31 @@ sap.ui.define([
       }
 
       return iYears <= 1 ? iYears + " year" : iYears + " years";
+    },
+
+    _setDashboardContextTexts: function () {
+      var oModel = this.getView().getModel("home");
+      var oTexts = oModel.getProperty("/texts") || {};
+      var oNow = new Date();
+      var iHour = oNow.getHours();
+      var sGreeting = oTexts.goodMorning || "Good morning";
+
+      if (iHour >= 12 && iHour < 18) {
+        sGreeting = oTexts.goodAfternoon || "Good afternoon";
+      } else if (iHour >= 18) {
+        sGreeting = oTexts.goodEvening || "Good evening";
+      }
+
+      var sLanguage = oModel.getProperty("/selectedLanguage") || "en";
+      var oFormatter = new Intl.DateTimeFormat(sLanguage === "fr" ? "fr-FR" : "en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+
+      oModel.setProperty("/greeting", sGreeting);
+      oModel.setProperty("/currentDateText", oFormatter.format(oNow));
     },
 
     _loadDashboardStats: function () {
@@ -348,6 +399,7 @@ sap.ui.define([
           oModel.setProperty("/loginPassword", "");
           oModel.setProperty("/loginEmail", data.email || sEmail);
 
+          this._setDashboardContextTexts();
           this._loadDashboardStats();
           this._loadCurrentProfile();
         }.bind(this))
@@ -538,6 +590,8 @@ sap.ui.define([
       oModel.setProperty("/userName", "Demo User");
       oModel.setProperty("/role", "");
       oModel.setProperty("/department", "");
+      oModel.setProperty("/greeting", "");
+      oModel.setProperty("/currentDateText", "");
       oModel.setProperty("/loginEmail", "");
       oModel.setProperty("/loginPassword", "");
       oModel.setProperty("/forgotPasswordEmail", "");
@@ -587,6 +641,22 @@ sap.ui.define([
 
     onOpenNotifications: function () {
       window.location.href = "/my.company.hr.notificationsui/index.html" + this._getDemoUserParam();
+    },
+
+    onOpenEmployeesKpi: function () {
+      this.onOpenEmployees();
+    },
+
+    onOpenLeaveKpi: function () {
+      this.onOpenLeaveRequests();
+    },
+
+    onOpenPromotionsKpi: function () {
+      this.onOpenPromotions();
+    },
+
+    onOpenNotificationsKpi: function () {
+      this.onOpenNotifications();
     }
   });
 });

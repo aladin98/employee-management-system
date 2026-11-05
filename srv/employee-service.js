@@ -2,6 +2,7 @@ import 'dotenv/config';
 import cds from '@sap/cds';
 import fetch from 'node-fetch';
 import nodemailer from 'nodemailer';
+import bcrypt from 'bcryptjs';
 
 export default cds.service.impl(async function () {
   const {
@@ -160,11 +161,32 @@ export default cds.service.impl(async function () {
     }
   };
 
+//Validation email 
   const isValidEmail = (email) => {
     if (!email || typeof email !== 'string') return false;
     const sEmail = email.trim();
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sEmail);
   };
+  //hashed password
+  const isBcryptHash = (value) => {
+    return typeof value === 'string' && value.startsWith('$2');
+  };
+
+  const hashPassword = async (plainPassword) => {
+    return await bcrypt.hash(plainPassword, 10);
+  };
+
+  const verifyPassword = async (plainPassword, storedPassword) => {
+    if (!storedPassword) return false;
+
+    if (isBcryptHash(storedPassword)) {
+      return await bcrypt.compare(plainPassword, storedPassword);
+    }
+
+    // Temporary compatibility mode for old plain-text passwords
+    return storedPassword === plainPassword;
+  };
+
 
   const getLoggedInEmployee = async (req) => {
     const userEmail =
@@ -1138,9 +1160,11 @@ const updateS4UserCredentialPasswordByEmail = async (email, newPassword) => {
     return;
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   const credentials = await fetchUserCredentialsFromS4();
   const credential = credentials.find(
-    c => c.email === email && c.isActive
+    c => c.email?.trim().toLowerCase() === normalizedEmail && c.isActive
   );
 
   if (!credential) {
@@ -1153,7 +1177,9 @@ const updateS4UserCredentialPasswordByEmail = async (email, newPassword) => {
     };
   }
 
-  if (credential.password !== password) {
+  const isValid = await verifyPassword(password, credential.password);
+
+  if (!isValid) {
     return {
       success: false,
       message: 'Invalid password',
@@ -1178,7 +1204,7 @@ const updateS4UserCredentialPasswordByEmail = async (email, newPassword) => {
   return {
     success: true,
     message: 'Login successful',
-    email: employee.email || email,
+    email: employee.email || normalizedEmail,
     employeeID: employee.ID,
     fullName: employee.fullName || ''
   };
@@ -1250,7 +1276,8 @@ this.on('resetPassword', async (req) => {
     return 'This reset token has expired';
   }
 
-  await updateS4UserCredentialPasswordByEmail(resetRecord.email, newPassword);
+  const hashedPassword = await hashPassword(newPassword);
+  await updateS4UserCredentialPasswordByEmail(resetRecord.email, hashedPassword);
 
   await updateS4PasswordResetByToken(token, {
     Used: true
